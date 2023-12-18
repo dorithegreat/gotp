@@ -1,6 +1,7 @@
-com/gotp/PrimaryController.class
-com/gotp/App.class
-com/gotp/BoardController.class
+com\gotp\ServerTest\SimpleServer.class
 module-info.class
-com/gotp/SecondaryController.class
-com/gotp/TestSceneController.class
+com\gotp\PrimaryController.class
+com\gotp\SecondaryController.class
+com\gotp\ServerTest\SimpleClient.class
+com\gotp\App.class
+com\gotp\board\Board.class
