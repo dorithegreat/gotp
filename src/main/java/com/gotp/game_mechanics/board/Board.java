@@ -3,6 +3,7 @@ package com.gotp.game_mechanics.board;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 
 import com.gotp.game_mechanics.utilities.Vector;
 
@@ -81,7 +82,7 @@ public class Board {
      * @param y
      * @param value
      */
-    public void setField(final int x, final int y, final PieceType value) {
+    public void setField(final PieceType value, final int x, final int y) {
         this.boardMatrix[x][y] = value;
     }
 
@@ -90,7 +91,7 @@ public class Board {
      * @param coordinates
      * @param value
      */
-    public void setField(final Vector coordinates, final PieceType value) {
+    public void setField(final PieceType value, final Vector coordinates) {
         this.boardMatrix[coordinates.getX()][coordinates.getY()] = value;
     }
 
@@ -101,7 +102,7 @@ public class Board {
      */
     public void setFields(final PieceType value, final Vector... coordinates) {
         for (Vector coordinate : coordinates) {
-            this.setField(coordinate, value);
+            this.setField(value, coordinate);
         }
     }
 
@@ -163,6 +164,29 @@ public class Board {
     }
 
     /**
+     * Returns all groups on the board.
+     * @return ArrayList of groups.
+     */
+    public List<HashSet<Vector>> groups() {
+        ArrayList<HashSet<Vector>> result = new ArrayList<HashSet<Vector>>();
+        HashSet<Vector> alreadyChecked = new HashSet<Vector>();
+
+        for (int i = 0; i < this.boardSize; i++) {
+            for (int ii = 0; ii < this.boardSize; ii++) {
+                Vector currentField = new Vector(i, ii);
+                if (alreadyChecked.contains(currentField) || this.getField(currentField) == PieceType.EMPTY) {
+                    continue;
+                }
+                HashSet<Vector> currentGroup = this.group(currentField);
+                result.add(currentGroup);
+                alreadyChecked.addAll(currentGroup);
+            }
+        }
+
+        return result;
+    }
+
+    /**
      * Returns board as a string.
      */
     @Override
@@ -176,7 +200,7 @@ public class Board {
         for (int i = 0; i < this.boardSize; i++) {
             result += pieceRepresentation.get(this.boardMatrix[0][i]);
             for (int ii = 1; ii < this.boardSize; ii++) {
-                result += " -- " + pieceRepresentation.get(this.boardMatrix[ii][i]);
+                result += " -- " + this.boardMatrix[ii][i].shortName();
             }
             result += "\n";
 
