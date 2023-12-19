@@ -1,4 +1,4 @@
-package com.gotp;
+package com.gotp.GUIcontrollers;
 
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
@@ -44,16 +44,17 @@ public class TestSceneController {
     @FXML
     private RadioButton button9;
 
-    private Parent root;
-    private Stage stage;
-    private Scene scene;
 
     /**
      * size of the board that will be created.
      */
     private int size = 9;
 
-    BoardController boardController = new BoardController();
+    /**
+     * controller of the next scene.
+     * Is needed so that the size of the board can be set from the current controller
+     */
+    private BoardController boardController = new BoardController();
 
     @FXML
     void choose11x11(ActionEvent event) {
@@ -76,17 +77,26 @@ public class TestSceneController {
         size = 9;
     }
 
+    /**
+     * Handler for the start button, goes to the board screen and starts the game
+     * @param event
+     * @throws IOException //TODO figure out when
+     */
     @FXML
-    void startGame(ActionEvent event) throws IOException {
-        // App.setRoot("board");
-        //boardController.addToGrid(9);
+    void startGame(final ActionEvent event) throws IOException {
+        //a few declarations that will be necessary for changing the scene
+        Parent root;
+        Stage stage;
+        Scene scene;
 
         FXMLLoader boardLoader = new FXMLLoader(getClass().getResource("board.fxml"));
         root = boardLoader.load();
         BoardController boardController = boardLoader.getController();
 
-        boardController.addToGrid(9);
+        //calls method in the other controller to create a board of certain size
+        boardController.addToGrid(size);
 
+        //code that changes the scene
         stage = (Stage) ((Node) event.getSource()).getScene().getWindow();
         scene = new Scene(root);
         stage.setScene(scene);
