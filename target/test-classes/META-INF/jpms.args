@@ -1,0 +1,4 @@
+--patch-module
+com.gotp=_
+--add-reads
+com.gotp=ALL-UNNAMED

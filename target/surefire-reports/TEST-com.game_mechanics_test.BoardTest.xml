@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<testsuite xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="https://maven.apache.org/surefire/maven-surefire-plugin/xsd/surefire-test-report-3.0.xsd" version="3.0" name="com.SetTest" time="0.001" tests="2" errors="0" skipped="0" failures="0">
+<testsuite xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="https://maven.apache.org/surefire/maven-surefire-plugin/xsd/surefire-test-report-3.0.xsd" version="3.0" name="com.game_mechanics_test.BoardTest" time="0.065" tests="2" errors="0" skipped="0" failures="0">
   <properties>
     <property name="java.specification.version" value="17"/>
     <property name="sun.cpu.isalist" value="amd64"/>
@@ -58,6 +58,22 @@
     <property name="sun.io.unicode.encoding" value="UnicodeLittle"/>
     <property name="java.class.version" value="61.0"/>
   </properties>
-  <testcase name="testEqual" classname="com.SetTest" time="0.0"/>
-  <testcase name="testHashSet" classname="com.SetTest" time="0.0"/>
+  <testcase name="groupFindTest" classname="com.game_mechanics_test.BoardTest" time="0.034">
+    <system-out><![CDATA[Vec(1, 0)
+Vec(0, 0)
+Vec(1, 1)
+Vec(0, 1)
+B -- B --   --   --  
+|    |    |    |    |
+B -- B --   --   --  
+|    |    |    |    |
+  --   -- B --   --  
+|    |    |    |    |
+  --   --   --   --  
+|    |    |    |    |
+  --   --   --   --  
+
+]]></system-out>
+  </testcase>
+  <testcase name="testNegativeSize" classname="com.game_mechanics_test.BoardTest" time="0.0"/>
 </testsuite>

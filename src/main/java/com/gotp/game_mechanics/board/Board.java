@@ -1,9 +1,16 @@
 package com.gotp.game_mechanics.board;
 
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
 
 import com.gotp.game_mechanics.utilities.Vector;
 
+/**
+ * This class is an abstraction for a 2D array of pieces. It provides methods to communicate
+ * and modify the state of the game. It also checks wchich moves are legal.
+ * It's initialized by initializeEmptyBoardMatrix() method.
+ */
 public class Board {
     /**
      * Defines how big the board is.
@@ -13,8 +20,6 @@ public class Board {
 
     /**
      * An `boardSize` x `boardSize` sized 2D array that stores information aboout pieces.
-     * This class (Board) is an abstraction for this object. It provides methods to communicate
-     * and modify this object. It's initialized by initializeEmptyBoardMatrix() method.
      */
     private PieceType[][] boardMatrix;
 
@@ -76,7 +81,7 @@ public class Board {
      * @param y
      * @param value
      */
-    private void setField(final int x, final int y, final PieceType value) {
+    public void setField(final int x, final int y, final PieceType value) {
         this.boardMatrix[x][y] = value;
     }
 
@@ -85,8 +90,19 @@ public class Board {
      * @param coordinates
      * @param value
      */
-    private void setField(final Vector coordinates, final PieceType value) {
+    public void setField(final Vector coordinates, final PieceType value) {
         this.boardMatrix[coordinates.getX()][coordinates.getY()] = value;
+    }
+
+    /**
+     * Sets the given fields a specified piece type.
+     * @param value
+     * @param coordinates
+     */
+    public void setFields(final PieceType value, final Vector... coordinates) {
+        for (Vector coordinate : coordinates) {
+            this.setField(coordinate, value);
+        }
     }
 
     /**
@@ -94,29 +110,88 @@ public class Board {
      * @param coordinates
      * @return 4, 3 or 2 neighbours of the given field.
      */
-    private ArrayList<Vector> neighbours(final Vector coordinates) {
+    public ArrayList<Vector> neighbours(final Vector coordinates) {
         ArrayList<Vector> result = new ArrayList<Vector>();
 
         // before adding the neighbour, we have to check if it's not outside of the board.
         if (coordinates.getX() > 0) {
-            result.add(coordinates.add(new Vector(1, 0)));
-        }
-        if (coordinates.getX() < this.boardSize - 1) {
             result.add(coordinates.add(new Vector(-1, 0)));
         }
+        if (coordinates.getX() < this.boardSize - 1) {
+            result.add(coordinates.add(new Vector(1, 0)));
+        }
         if (coordinates.getY() > 0) {
-            result.add(coordinates.add(new Vector(0, 1)));
+            result.add(coordinates.add(new Vector(0, -1)));
         }
         if (coordinates.getY() < this.boardSize - 1) {
-            result.add(coordinates.add(new Vector(0, -1)));
+            result.add(coordinates.add(new Vector(0, 1)));
         }
 
         return result;
     }
 
-    // public calculateGroup() {
+    /**
+     * Given a starting positions finds all pieces which are members of the same group.
+     * @param startingField
+     * @return group of Vectors representing fields of the group.
+     */
+    public HashSet<Vector> group(final Vector startingField) {
+        PieceType searchedColor = this.getField(startingField);
 
-    // }
+        HashSet<Vector> result = new HashSet<Vector>();
+        HashSet<Vector> fieldsToCheck = new HashSet<Vector>();
+        HashSet<Vector> newFieldsToCheck = new HashSet<Vector>();
+        HashSet<Vector> alreadyChecked = new HashSet<Vector>();
+        fieldsToCheck.add(startingField);
+
+        while (!fieldsToCheck.isEmpty()) {
+            for (Vector field : fieldsToCheck) {
+                alreadyChecked.add(field);
+
+                if (this.getField(field) != searchedColor) {
+                    continue;
+                }
+
+                result.add(field);
+                newFieldsToCheck.addAll(this.neighbours(field));
+            }
+            newFieldsToCheck.removeAll(alreadyChecked);
+            fieldsToCheck = (HashSet<Vector>) newFieldsToCheck.clone();
+        }
+
+        return result;
+    }
+
+    /**
+     * Returns board as a string.
+     */
+    @Override
+    public String toString() {
+        HashMap<PieceType, String> pieceRepresentation = new HashMap<PieceType, String>();
+        pieceRepresentation.put(PieceType.EMPTY, " ");
+        pieceRepresentation.put(PieceType.BLACK, "B");
+        pieceRepresentation.put(PieceType.WHITE, "W");
+
+        String result = "";
+        for (int i = 0; i < this.boardSize; i++) {
+            result += pieceRepresentation.get(this.boardMatrix[0][i]);
+            for (int ii = 1; ii < this.boardSize; ii++) {
+                result += " -- " + pieceRepresentation.get(this.boardMatrix[ii][i]);
+            }
+            result += "\n";
+
+            if (i == this.boardSize - 1) {
+                break;
+            }
+
+            result += "|";
+            for (int ii = 1; ii < this.boardSize; ii++) {
+                result += "    |";
+            }
+            result += "\n";
+        }
+        return result;
+    }
 
     // public getGroups() {
 
