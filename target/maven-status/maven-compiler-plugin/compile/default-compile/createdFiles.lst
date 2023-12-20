@@ -6,9 +6,9 @@ com/gotp/ServerTest/SimpleClient.class
 com/gotp/ServerTest/SimpleServer.class
 com/gotp/game_mechanics/board/PieceType.class
 com/gotp/GUIcontrollers/BoardPiece.class
-com/gotp/GUIcontrollers/BoardPiece$state.class
 com/gotp/GUIcontrollers/SecondaryController.class
 module-info.class
 com/gotp/GUIcontrollers/BoardController.class
+com/gotp/GUIcontrollers/BoardPiece$State.class
 com/gotp/GUIcontrollers/TestSceneController.class
 com/gotp/game_mechanics/board/Board.class

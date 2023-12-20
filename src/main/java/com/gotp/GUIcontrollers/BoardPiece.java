@@ -32,7 +32,7 @@ public class BoardPiece extends StackPane {
      * Constructor.
      * Also assigns a handler to change color of the piece when clicked
      */
-    public BoardPiece(){
+    public BoardPiece() {
         super();
         Circle circle = new Circle(20);
         circle.setVisible(false);

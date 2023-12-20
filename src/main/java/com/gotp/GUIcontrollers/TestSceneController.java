@@ -57,28 +57,28 @@ public class TestSceneController {
     private BoardController boardController = new BoardController();
 
     @FXML
-    void choose11x11(ActionEvent event) {
+    void choose11x11(final ActionEvent event) {
         size = 11;
         System.out.println("chose 11");
     }
 
     @FXML
-    void choose15x15(ActionEvent event) {
+    void choose15x15(final ActionEvent event) {
         size = 15;
     }
 
     @FXML
-    void choose19x19(ActionEvent event) {
+    void choose19x19(final ActionEvent event) {
         size = 19;
     }
 
     @FXML
-    void choose9x9(ActionEvent event) {
+    void choose9x9(final ActionEvent event) {
         size = 9;
     }
 
     /**
-     * Handler for the start button, goes to the board screen and starts the game
+     * Handler for the start button, goes to the board screen and starts the game.
      * @param event
      * @throws IOException //TODO figure out when
      */
