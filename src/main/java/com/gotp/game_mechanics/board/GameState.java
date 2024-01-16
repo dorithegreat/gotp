@@ -1,13 +1,9 @@
 package com.gotp.game_mechanics.board;
 
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 
 import com.gotp.game_mechanics.utilities.Vector;
-
-// TODO: finish implementing legal moves including capturing pieces.
 
 public class GameState {
     /**
@@ -28,15 +24,27 @@ public class GameState {
         this.board = new Board(boardSize);
     }
 
+     /**
+     * GameState constructor.
+     * @param board
+     */
+    public GameState(final Board board) {
+        this.board = board;
+    }
+
     /**
-     * A move is considered semilegla if the position is on the board and the field is not empty.
+     * A move is considered legal if 3 rules are satisfied:
+     * 1. A field on witch the piece is placed is empty.
+     * 2. After placing the piece, it has at least one liberty
+     * (this includes situation when it captures opponent's pieces).
+     * 3. The move does not repeat the previous board state (Ko rule).
      * @param pieceType
      * @param field
      * @return boolean
      */
-    public boolean isSemiLegalMove(final PieceType pieceType, final Vector field) {
+    public boolean isLegalMove(final PieceType pieceType, final Vector field) {
         // Check if piece type is valid.
-        if (pieceType == PieceType.EMPTY) {
+        if (pieceType.isNotEmpty()) {
             return false;
         }
 
@@ -49,38 +57,46 @@ public class GameState {
         }
 
         // Check if field is empty.
-        return this.board.getField(field) != PieceType.EMPTY;
-    }
+        if (this.board.getField(field).isNotEmpty()) {
+            return false;
+        }
 
 
-    /**
-     * A move is considered legal if 3 rules are satisfied:
-     * 1. A field on witch 
-     * TODO: finish implementing this method.
-     * @param pieceType
-     * @param field
-     * @return boolean
-     */
-    public boolean isLegalMove(final PieceType pieceType, final Vector field) {
-        
         // Instantiate a new board object.
         Board boardAfterMove = this.board.clone();
 
         // We forcibly set the field to the pieceType. We still don't know if the move is legal.
         boardAfterMove.setField(pieceType, field);
 
-        // Check if capture is possible.
-        List<Set<Vector>> capturedGroups = boardAfterMove.capturedGroups();
+        // Check if after placing the piece, there is a group with no liberties.
+        List<Group> capturedGroups = boardAfterMove.groupsWithoutLiberties();
 
+        // If there are no captured groups, the move is illegal.
         if (capturedGroups.isEmpty()) {
             return false;
         }
 
-        for (Set<Vector> hashSet : capturedGroups) {
-            boardAfterMove.setFields(PieceType.EMPTY, hashSet);
+        // Filter own groups from captured groups.
+        // We don't have to check if we may strangle our own group,
+        // because if the piece we are currently checking will have at least one liberty,
+        // then the entire group will have at least one liberty.
+        List<Group> capturedOpponentGroups = new ArrayList<Group>();
+        for (Group group : capturedGroups) {
+            if (group.getPieceType() == pieceType.opposite()) {
+                capturedOpponentGroups.add(group);
+            }
+        }
+        if (capturedOpponentGroups.isEmpty()) {
+            return false;
+        }
+
+        // If there are captured groups, remove them from the board.
+        // ? Is it possible to capture more than one group at once ? I'm not sure, but regardless, this will work.
+        for (Group group : capturedOpponentGroups) {
+            boardAfterMove.setFields(PieceType.EMPTY, group);
         }
 
         // Ko rule. You can't repeat the previous board state.
-        return boardAfterMove.equals(this.previousBoard);
+        return !(boardAfterMove.equals(this.previousBoard));
     }
 }

@@ -1,31 +1,25 @@
 package com.game_mechanics_test;
 
 
+import static org.junit.Assert.assertEquals;
+
 import java.util.ArrayList;
-import java.util.HashSet;
 
 import org.junit.Test;
 
 import com.gotp.game_mechanics.board.Board;
+import com.gotp.game_mechanics.board.GameState;
+import com.gotp.game_mechanics.board.Group;
 import com.gotp.game_mechanics.board.PieceType;
 import com.gotp.game_mechanics.utilities.Vector;
 
 public class BoardTest {
 
     /**
-     * Test passes if Board(-1) throws an Exception.
+     * Builds a test board.
+     * @return Board
      */
-    @Test(expected = IllegalArgumentException.class)
-    public void testNegativeSize() {
-        new Board(-1);
-    }
-
-    /**
-     * Test for checking group() method.
-     * TODO: finish this test.
-     */
-    @Test
-    public void groupFindTest() {
+    private Board buildTestBoard() {
         final int testBoardSize = 5;
 
         Board testBoard = new Board(testBoardSize);
@@ -75,16 +69,86 @@ public class BoardTest {
             new Vector(x7, y7)
         );
 
+        return testBoard;
+    }
 
-        ArrayList<HashSet<Vector>> groups = (ArrayList<HashSet<Vector>>) testBoard.groups();
-        for (HashSet<Vector> group : groups) {
-            // System.out.println(group);
+    /**
+     * Test passes if Board(-1) throws an Exception.
+     */
+    @Test(expected = IllegalArgumentException.class)
+    public void testNegativeSize() {
+        new Board(-1);
+    }
+
+    /**
+     * Test for checking group() method.
+     * TODO: finish this test.
+     */
+    @Test
+    public void groupFindTest() {
+        Board testBoard = buildTestBoard();
+
+
+        ArrayList<Group> groups = (ArrayList<Group>) testBoard.groups();
+        for (Group group : groups) {
+            System.out.println(group);
         }
 
-        // for (Vector field : firstGroup) {
-        //     System.out.println(field);
-        // }
+        Group firstGroup = new Group(PieceType.BLACK);
+        firstGroup.add(new Vector(1, 0));
+        firstGroup.add(new Vector(0, 0));
+        firstGroup.add(new Vector(1, 1));
+        firstGroup.add(new Vector(0, 1));
 
+        Group secondGroup = new Group(PieceType.BLACK);
+        secondGroup.add(new Vector(2, 2));
+
+        Group thirdGroup = new Group(PieceType.WHITE);
+        thirdGroup.add(new Vector(2, 3));
+
+        Group fourthGroup = new Group(PieceType.WHITE);
+        fourthGroup.add(new Vector(4, 3));
+        fourthGroup.add(new Vector(3, 0));
+        fourthGroup.add(new Vector(4, 1));
+        fourthGroup.add(new Vector(3, 1));
+        fourthGroup.add(new Vector(4, 2));
+
+        Group fifthGroup = new Group(PieceType.WHITE);
+        fifthGroup.add(new Vector(3, 4));
+
+        ArrayList<Group> expectedGroups = new ArrayList<Group>();
+        expectedGroups.add(firstGroup);
+        expectedGroups.add(secondGroup);
+        expectedGroups.add(thirdGroup);
+        expectedGroups.add(fourthGroup);
+        expectedGroups.add(fifthGroup);
+
+        assertEquals(expectedGroups, groups);
         System.out.println(testBoard);
+    }
+
+    /**
+     * Tests the GameState.isLegalMove() method.
+     * TODO: finish this test.
+     */
+    @Test
+    public void legalMoveTest() {
+        Board testBoard = buildTestBoard();
+        GameState gameState = new GameState(testBoard);
+
+        // assertEquals(
+        //     true,
+        //     gameState.isLegalMove(PieceType.BLACK, new Vector(2, 0))
+        // );
+
+        // assertEquals(
+        //     true,
+        //     gameState.isLegalMove(PieceType.WHITE, new Vector(2, 0))
+        // );
+
+        // assertEquals(
+        //     false,
+        //     gameState.isLegalMove(PieceType.BLACK, new Vector(0, 0))
+        // );
     }
 }

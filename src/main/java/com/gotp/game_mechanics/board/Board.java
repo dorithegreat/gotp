@@ -125,7 +125,7 @@ public class Board implements Cloneable {
      * @param coordinates
      * @return 4, 3 or 2 neighbours of the given field.
      */
-    public ArrayList<Vector> neighbours(final Vector coordinates) {
+    public List<Vector> neighbours(final Vector coordinates) {
         ArrayList<Vector> result = new ArrayList<Vector>();
 
         // before adding the neighbour, we have to check if it's not outside of the board.
@@ -150,7 +150,7 @@ public class Board implements Cloneable {
      * @param startingField
      * @return group of Vectors representing fields of the group.
      */
-    public HashSet<Vector> group(final Vector startingField) {
+    public Group group(final Vector startingField) {
         PieceType searchedColor = this.getField(startingField);
 
         HashSet<Vector> result = new HashSet<Vector>();
@@ -174,15 +174,15 @@ public class Board implements Cloneable {
             fieldsToCheck = (HashSet<Vector>) newFieldsToCheck.clone();
         }
 
-        return result;
+        return new Group(result, searchedColor);
     }
 
     /**
      * Returns all groups on the board.
      * @return ArrayList of groups.
      */
-    public List<HashSet<Vector>> groups() {
-        ArrayList<HashSet<Vector>> result = new ArrayList<HashSet<Vector>>();
+    public List<Group> groups() {
+        ArrayList<Group> result = new ArrayList<Group>();
         HashSet<Vector> alreadyChecked = new HashSet<Vector>();
 
         for (int i = 0; i < this.boardSize; i++) {
@@ -191,7 +191,7 @@ public class Board implements Cloneable {
                 if (alreadyChecked.contains(currentField) || this.getField(currentField) == PieceType.EMPTY) {
                     continue;
                 }
-                HashSet<Vector> currentGroup = this.group(currentField);
+                Group currentGroup = this.group(currentField);
                 result.add(currentGroup);
                 alreadyChecked.addAll(currentGroup);
             }
@@ -274,7 +274,7 @@ public class Board implements Cloneable {
      * @param group
      * @return List of liberties.
      */
-    public List<Vector> groupLiberties(final Set<Vector> group) {
+    public List<Vector> groupLiberties(final Group group) {
         List<Vector> result = new ArrayList<Vector>();
 
         for (Vector field : group) {
@@ -288,10 +288,10 @@ public class Board implements Cloneable {
      * Returns all captured groups.
      * @return List of captured groups.
      */
-    public List<Set<Vector>> capturedGroups() {
-        List<Set<Vector>> result = new ArrayList<Set<Vector>>();
+    public List<Group> groupsWithoutLiberties() {
+        List<Group> result = new ArrayList<Group>();
 
-        for (Set<Vector> group : this.groups()) {
+        for (Group group : this.groups()) {
             if (this.groupLiberties(group).isEmpty()) {
                 result.add(group);
             }

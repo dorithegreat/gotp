@@ -24,4 +24,51 @@ public enum PieceType {
                 return " ";
         }
     }
+
+    /**
+     * Returns a long name of the piece type.
+     * @return String
+     */
+    public String longName() {
+        switch (this) {
+            case BLACK:
+                return "Black";
+            case WHITE:
+                return "White";
+            case EMPTY:
+                return "Empty";
+            default:
+                return "Empty";
+        }
+    }
+
+    /**
+     * Returns true if piece type is a stone.
+     * @return boolean
+     */
+    public boolean isNotEmpty() {
+        switch (this) {
+            case BLACK:
+                return true;
+            case WHITE:
+                return true;
+            default:
+                return false;
+        }
+    }
+
+    /**
+     * Returns opposite piece type.
+     * @return PieceType
+     */
+    public PieceType opposite() {
+        switch (this) {
+            case BLACK:
+                return WHITE;
+            case WHITE:
+                return BLACK;
+            default:
+                return EMPTY;
+        }
+    }
 }
