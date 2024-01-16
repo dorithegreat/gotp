@@ -1,9 +1,10 @@
 package com.gotp.game_mechanics.board;
 
 import java.util.ArrayList;
-import java.util.HashMap;
+import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import com.gotp.game_mechanics.utilities.Vector;
 
@@ -12,7 +13,7 @@ import com.gotp.game_mechanics.utilities.Vector;
  * and modify the state of the game. It also checks wchich moves are legal.
  * It's initialized by initializeEmptyBoardMatrix() method.
  */
-public class Board {
+public class Board implements Cloneable {
     /**
      * Defines how big the board is.
      * Has to be strictly greater than 1.
@@ -39,6 +40,7 @@ public class Board {
 
     /**
      * Used at the start to initialize the array of pieces.
+     * Fills the board with EMPTY pieces.
      */
     private void initializeEmptyBoardMatrix() {
         this.boardMatrix = new PieceType[this.boardSize][this.boardSize];
@@ -105,6 +107,18 @@ public class Board {
             this.setField(value, coordinate);
         }
     }
+
+    /**
+     * Sets the given fields a specified piece type.
+     * @param value
+     * @param coordinates
+     */
+    public void setFields(final PieceType value, final Iterable<Vector> coordinates) {
+        for (Vector coordinate : coordinates) {
+            this.setField(value, coordinate);
+        }
+    }
+
 
     /**
      * Calcluates all neighbours of the given field.
@@ -191,14 +205,9 @@ public class Board {
      */
     @Override
     public String toString() {
-        HashMap<PieceType, String> pieceRepresentation = new HashMap<PieceType, String>();
-        pieceRepresentation.put(PieceType.EMPTY, " ");
-        pieceRepresentation.put(PieceType.BLACK, "B");
-        pieceRepresentation.put(PieceType.WHITE, "W");
-
         String result = "";
         for (int i = 0; i < this.boardSize; i++) {
-            result += pieceRepresentation.get(this.boardMatrix[0][i]);
+            result += this.boardMatrix[0][i].shortName();
             for (int ii = 1; ii < this.boardSize; ii++) {
                 result += " -- " + this.boardMatrix[ii][i].shortName();
             }
@@ -217,8 +226,135 @@ public class Board {
         return result;
     }
 
-    // public getGroups() {
+    /**
+     * Returns a list of empty fields.
+     * @param playerColor
+     * @return HashSet of empty fields.
+     */
+    public Set<Vector> emptyFields(final PieceType playerColor) {
 
-    // }
+        HashSet<Vector> emptyFields = new HashSet<Vector>();
 
+        for (int i = 0; i < this.boardSize; i++) {
+            for (int ii = 0; ii < this.boardSize; ii++) {
+                Vector currentField = new Vector(i, ii);
+                if (this.getField(currentField) == PieceType.EMPTY) {
+                    emptyFields.add(currentField);
+                }
+            }
+        }
+
+        return emptyFields;
+    }
+
+
+    /**
+     * Returns single piece's liberties.
+     * @param field
+     * @return List of liberties.
+     */
+    public List<Vector> liberties(final Vector field) {
+        if (this.getField(field) == PieceType.EMPTY) {
+            throw new IllegalArgumentException("Field is empty! Can't check liberties of an empty field.");
+        }
+
+        List<Vector> result = new ArrayList<Vector>();
+
+        for (Vector neighbour : this.neighbours(field)) {
+            if (this.getField(neighbour) == PieceType.EMPTY) {
+                result.add(neighbour);
+            }
+        }
+
+        return result;
+    }
+
+    /**
+     * Returns all liberties of the given group.
+     * @param group
+     * @return List of liberties.
+     */
+    public List<Vector> groupLiberties(final Set<Vector> group) {
+        List<Vector> result = new ArrayList<Vector>();
+
+        for (Vector field : group) {
+            result.addAll(this.liberties(field));
+        }
+
+        return result;
+    }
+
+    /**
+     * Returns all captured groups.
+     * @return List of captured groups.
+     */
+    public List<Set<Vector>> capturedGroups() {
+        List<Set<Vector>> result = new ArrayList<Set<Vector>>();
+
+        for (Set<Vector> group : this.groups()) {
+            if (this.groupLiberties(group).isEmpty()) {
+                result.add(group);
+            }
+        }
+
+        return result;
+    }
+
+    /**
+     * Overriden equals method.
+     */
+    @Override
+    public boolean equals(final Object other) {
+        if (other == this) {
+            return true;
+        }
+
+        if (!(other instanceof Board)) {
+            return false;
+        }
+
+        Board otherBoard = (Board) other;
+
+        if (this.boardSize != otherBoard.boardSize) {
+            return false;
+        }
+
+        for (int i = 0; i < this.boardSize; i++) {
+            for (int ii = 0; ii < this.boardSize; ii++) {
+                if (this.boardMatrix[i][ii] != otherBoard.boardMatrix[i][ii]) {
+                    return false;
+                }
+            }
+        }
+
+        return true;
+    }
+
+    /**
+     * Overriden hashCode method.
+     */
+    @Override
+    public int hashCode() {
+        final int prime1 = 17;
+        final int prime2 = 31;
+
+        int result = prime1;
+        result = prime2 * result + this.boardSize;
+        result = prime2 * result + Arrays.deepHashCode(this.boardMatrix);
+        return result;
+    }
+
+    /**
+     * Overriden clone method.
+     */
+    @Override
+    public Board clone() {
+        try {
+            Board result = (Board) super.clone();
+            result.boardMatrix = this.boardMatrix.clone();
+            return result;
+        } catch (CloneNotSupportedException e) {
+            throw new AssertionError();
+        }
+    }
 }

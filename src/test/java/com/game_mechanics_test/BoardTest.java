@@ -3,7 +3,6 @@ package com.game_mechanics_test;
 
 import java.util.ArrayList;
 import java.util.HashSet;
-import java.util.Random;
 
 import org.junit.Test;
 
@@ -86,6 +85,6 @@ public class BoardTest {
         //     System.out.println(field);
         // }
 
-        // System.out.println(testBoard);
+        System.out.println(testBoard);
     }
 }
