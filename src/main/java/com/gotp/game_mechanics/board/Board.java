@@ -60,8 +60,6 @@ public class Board {
     public Board(final String boardString) {
         String[] lines = boardString.split(";");
         this.boardSize = lines.length;
-        
-        // System.out.println("boardSize: " + this.boardSize);
 
         initializeEmptyBoardMatrix();
 

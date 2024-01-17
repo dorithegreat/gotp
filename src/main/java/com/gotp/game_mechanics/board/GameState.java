@@ -39,7 +39,7 @@ public class GameState {
      */
     public GameState(final int boardSize) {
         this.board = new Board(boardSize);
-        initializeScore();
+        initializeGame();
     }
 
      /**
@@ -48,13 +48,15 @@ public class GameState {
      */
     public GameState(final Board board) {
         this.board = board;
-        initializeScore();
+        initializeGame();
     }
 
-    private void initializeScore() {
+    private void initializeGame() {
         score = new HashMap<PieceType, Integer>();
         this.score.put(PieceType.BLACK, 0);
         this.score.put(PieceType.WHITE, 0);
+
+        this.turn = PieceType.BLACK;
     }
 
     /**
@@ -90,7 +92,7 @@ public class GameState {
             }
 
             // check if move is legal
-            if (!this.isLegalMove(pieceType, field)) {
+            if (!this.isLegalMove(pieceType, field).isLegal()) {
                 return false;
             }
 
@@ -130,26 +132,23 @@ public class GameState {
      * @param field
      * @return boolean
      */
-    public boolean isLegalMove(final PieceType pieceType, final Vector field) {
+    public MoveValidity isLegalMove(final PieceType pieceType, final Vector field) {
         // Check if piece type is valid.
         if (pieceType == PieceType.EMPTY) {
-            System.out.println("Failed! Piece type is EMPTY.");
-            return false;
+            return MoveValidity.EMPTY_PIECE;
         }
 
         // Check if field is on the board.
         if (field.getX() < 0 || field.getX() >= this.board.getBoardSize()) {
-            System.out.println("Failed! Field is not on the board.");
-            return false;
+            return MoveValidity.OUTSIDE_BOARD;
         }
         if (field.getY() < 0 || field.getY() >= this.board.getBoardSize()) {
-            return false;
+            return MoveValidity.OUTSIDE_BOARD;
         }
 
         // Check if field is empty.
         if (this.board.getField(field).isNotEmpty()) {
-            System.out.println("Failed! Field is not empty.");
-            return false;
+            return MoveValidity.FIELD_OCCUPIED;
         }
 
 
@@ -161,7 +160,7 @@ public class GameState {
 
         // If after placing the piece, its group has at least one liberty, the move is legal.
         if (boardAfterMove.groupLiberties(boardAfterMove.group(field)).size() > 0) {
-            return true;
+            return MoveValidity.LEGAL;
         }
 
         // Check if after placing the piece, there is a group with no liberties.
@@ -169,7 +168,7 @@ public class GameState {
 
         // If there are no captured groups, the move is illegal.
         if (capturedGroups.isEmpty()) {
-            return false;
+            return MoveValidity.SUICIDE;
         }
 
         // Filter own groups from captured groups.
@@ -183,7 +182,7 @@ public class GameState {
             }
         }
         if (capturedOpponentGroups.isEmpty()) {
-            return false;
+            return MoveValidity.SUICIDE;
         }
 
         // If there are captured groups, remove them from the board.
@@ -193,6 +192,30 @@ public class GameState {
         }
 
         // Ko rule. You can't repeat the previous board state.
-        return !(boardAfterMove.equals(this.previousBoard));
+        if (boardAfterMove.equals(this.previousBoard)) {
+            return MoveValidity.REPETITION;
+        }
+
+        return MoveValidity.LEGAL;
+    }
+
+    /**
+     * Getter for turn.
+     * @return PieceType
+     */
+    public PieceType getTurn() {
+        return this.turn;
+    }
+
+    /**
+     * Override toString() method.
+     * @return String
+     */
+    @Override
+    public String toString() {
+        return  "Turn: " + this.turn.longName()
+                + "\tWhite: " + this.score.get(PieceType.WHITE)
+                + "\tBlack: " + this.score.get(PieceType.BLACK)
+                + "\n" + this.board.toString();
     }
 }
