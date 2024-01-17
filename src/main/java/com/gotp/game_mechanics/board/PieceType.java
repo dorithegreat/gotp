@@ -26,6 +26,26 @@ public enum PieceType {
     }
 
     /**
+     * Get a pieceType from a short name.
+     * @param shortName
+     * @return PieceType
+     */
+    public static PieceType fromShortName(final String shortName) {
+        switch (shortName) {
+            case "B":
+                return BLACK;
+            case "W":
+                return WHITE;
+            case "E":
+                return EMPTY;
+            case " ":
+                return EMPTY;
+            default:
+                return EMPTY;
+        }
+    }
+
+    /**
      * Returns a long name of the piece type.
      * @return String
      */

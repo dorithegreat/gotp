@@ -14,12 +14,11 @@ import com.gotp.game_mechanics.board.PieceType;
 import com.gotp.game_mechanics.utilities.Vector;
 
 public class BoardTest {
-
     /**
-     * Builds a test board.
-     * @return Board
+     * Test passes if board built manually is equal to board built with a String constructor.
      */
-    private Board buildTestBoard() {
+    @Test
+    public void stringConstructorTest() {
         final int testBoardSize = 5;
 
         Board testBoard = new Board(testBoardSize);
@@ -69,7 +68,9 @@ public class BoardTest {
             new Vector(x7, y7)
         );
 
-        return testBoard;
+        Board stringBoard = new Board("BBEWE;BBEWW;EEBEW;EEWEW;EEEWE");
+
+        assertEquals(testBoard, stringBoard);
     }
 
     /**
@@ -86,13 +87,13 @@ public class BoardTest {
      */
     @Test
     public void groupFindTest() {
-        Board testBoard = buildTestBoard();
+        Board testBoard = new Board("BBEWE;BBEWW;EEBEW;EEWEW;EEEWE");
 
 
         ArrayList<Group> groups = (ArrayList<Group>) testBoard.groups();
-        for (Group group : groups) {
-            System.out.println(group);
-        }
+        // for (Group group : groups) {
+        //     System.out.println(group);
+        // }
 
         Group firstGroup = new Group(PieceType.BLACK);
         firstGroup.add(new Vector(1, 0));
@@ -124,7 +125,7 @@ public class BoardTest {
         expectedGroups.add(fifthGroup);
 
         assertEquals(expectedGroups, groups);
-        System.out.println(testBoard);
+        // System.out.println(testBoard);
     }
 
     /**
@@ -133,8 +134,27 @@ public class BoardTest {
      */
     @Test
     public void legalMoveTest() {
-        Board testBoard = buildTestBoard();
+        Board testBoard = new Board("BBEWE;BBEWW;EEBEW;EEWEW;EEEWE");
         GameState gameState = new GameState(testBoard);
+
+
+        // False if piece type is EMPTY.
+        assertEquals(
+            false,
+            gameState.isLegalMove(PieceType.EMPTY, new Vector(0, 0))
+        );
+
+        // False if field is outside the board.
+        assertEquals(
+            false,
+            gameState.isLegalMove(PieceType.BLACK, new Vector(-1, 0))
+        );
+
+        // False if field is occupied.
+        assertEquals(
+            false,
+            gameState.isLegalMove(PieceType.BLACK, new Vector(0, 0))
+        );
 
         // assertEquals(
         //     true,

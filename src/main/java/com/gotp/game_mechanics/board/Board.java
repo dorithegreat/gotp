@@ -52,6 +52,28 @@ public class Board implements Cloneable {
     }
 
     /**
+     * Board constructor.
+     * Creates a board from a string.
+     * Example string: "EEE;EBE;EWE"
+     * @param boardString
+     */
+    public Board(final String boardString) {
+        String[] lines = boardString.split(";");
+        this.boardSize = lines.length;
+        
+        // System.out.println("boardSize: " + this.boardSize);
+
+        initializeEmptyBoardMatrix();
+
+        for (int i = 0; i < this.boardSize; i++) {
+            String[] fields = lines[i].split("");
+            for (int ii = 0; ii < this.boardSize; ii++) {
+                this.boardMatrix[ii][i] = PieceType.fromShortName(fields[ii]);
+            }
+        }
+    }
+
+    /**
      * Getter for `boardSize` private variable.
      * @return int
      */

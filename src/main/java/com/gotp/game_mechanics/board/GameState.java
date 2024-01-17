@@ -44,12 +44,14 @@ public class GameState {
      */
     public boolean isLegalMove(final PieceType pieceType, final Vector field) {
         // Check if piece type is valid.
-        if (pieceType.isNotEmpty()) {
+        if (pieceType == PieceType.EMPTY) {
+            System.out.println("Failed! Piece type is EMPTY.");
             return false;
         }
 
         // Check if field is on the board.
         if (field.getX() < 0 || field.getX() >= this.board.getBoardSize()) {
+            System.out.println("Failed! Field is not on the board.");
             return false;
         }
         if (field.getY() < 0 || field.getY() >= this.board.getBoardSize()) {
@@ -58,6 +60,7 @@ public class GameState {
 
         // Check if field is empty.
         if (this.board.getField(field).isNotEmpty()) {
+            System.out.println("Failed! Field is not empty.");
             return false;
         }
 
