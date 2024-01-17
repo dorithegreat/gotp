@@ -8,7 +8,7 @@ import com.gotp.game_mechanics.utilities.Vector;
  * The pieceType information is kind of redundant,
  * however I store just in case.
  */
-public class MoveSet implements Move {
+public class MovePlace implements Move {
     /**
      * `field` is the field on which the piece is set.
      */
@@ -24,7 +24,7 @@ public class MoveSet implements Move {
      * @param field
      * @param pieceType
      */
-    public MoveSet(final Vector field, final PieceType pieceType) {
+    public MovePlace(final Vector field, final PieceType pieceType) {
         this.field = field;
         this.pieceType = pieceType;
     }

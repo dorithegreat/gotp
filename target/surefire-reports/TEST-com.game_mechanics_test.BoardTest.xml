@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<testsuite xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="https://maven.apache.org/surefire/maven-surefire-plugin/xsd/surefire-test-report-3.0.xsd" version="3.0" name="com.game_mechanics_test.BoardTest" time="0.066" tests="4" errors="0" skipped="0" failures="0">
+<testsuite xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="https://maven.apache.org/surefire/maven-surefire-plugin/xsd/surefire-test-report-3.0.xsd" version="3.0" name="com.game_mechanics_test.BoardTest" time="0.086" tests="4" errors="0" skipped="0" failures="0">
   <properties>
     <property name="java.specification.version" value="17"/>
     <property name="sun.cpu.isalist" value="amd64"/>
@@ -15,7 +15,7 @@
     <property name="sun.java.launcher" value="SUN_STANDARD"/>
     <property name="user.country" value="PL"/>
     <property name="sun.boot.library.path" value="C:\Users\User\AppData\Local\Programs\Eclipse Adoptium\jdk-17.0.6.10-hotspot\bin"/>
-    <property name="sun.java.command" value="org.apache.maven.surefire.booter.ForkedBooter C:\Users\User\AppData\Local\Temp\surefire6038478355121913532 2024-01-17T10-42-26_354-jvmRun1 surefire-20240117104226781_1tmp surefire_0-20240117104226781_2tmp"/>
+    <property name="sun.java.command" value="org.apache.maven.surefire.booter.ForkedBooter C:\Users\User\AppData\Local\Temp\surefire2652885254222262683 2024-01-17T11-02-22_409-jvmRun1 surefire-20240117110222805_1tmp surefire_0-20240117110222805_2tmp"/>
     <property name="jdk.debug" value="release"/>
     <property name="surefire.test.class.path" value="C:\Users\User\Desktop\Polibuda\III semestr\Technologia programowania\Laby\gotp\target\test-classes;C:\Users\User\.m2\repository\org\openjfx\javafx-controls\13\javafx-controls-13.jar;C:\Users\User\.m2\repository\org\openjfx\javafx-graphics\13\javafx-graphics-13.jar;C:\Users\User\.m2\repository\org\openjfx\javafx-base\13\javafx-base-13.jar;C:\Users\User\.m2\repository\org\openjfx\javafx-fxml\13\javafx-fxml-13.jar;C:\Users\User\.m2\repository\junit\junit\4.9\junit-4.9.jar;C:\Users\User\.m2\repository\org\hamcrest\hamcrest-core\1.1\hamcrest-core-1.1.jar;"/>
     <property name="sun.cpu.endian" value="little"/>
@@ -58,10 +58,8 @@
     <property name="sun.io.unicode.encoding" value="UnicodeLittle"/>
     <property name="java.class.version" value="61.0"/>
   </properties>
-  <testcase name="stringConstructorTest" classname="com.game_mechanics_test.BoardTest" time="0.007"/>
-  <testcase name="groupFindTest" classname="com.game_mechanics_test.BoardTest" time="0.0"/>
-  <testcase name="testNegativeSize" classname="com.game_mechanics_test.BoardTest" time="0.0"/>
-  <testcase name="legalMoveTest" classname="com.game_mechanics_test.BoardTest" time="0.024">
+  <testcase name="stringConstructorTest" classname="com.game_mechanics_test.BoardTest" time="0.006"/>
+  <testcase name="legalMoveTest" classname="com.game_mechanics_test.BoardTest" time="0.038">
     <system-out><![CDATA[W -- B -- B --   --  
 |    |    |    |    |
   -- W -- W --   --  
@@ -75,6 +73,48 @@
 Failed! Piece type is EMPTY.
 Failed! Field is not on the board.
 Failed! Field is not empty.
+  -- W -- W -- W --  
+|    |    |    |    |
+W -- B --   --   -- W
+|    |    |    |    |
+  -- W -- W -- W --  
+|    |    |    |    |
+  --   --   --   --  
+|    |    |    |    |
+  --   --   --   --  
+
+  -- W -- W -- W --  
+|    |    |    |    |
+W -- B -- B --   -- W
+|    |    |    |    |
+  -- W -- W -- W --  
+|    |    |    |    |
+  --   --   --   --  
+|    |    |    |    |
+  --   --   --   --  
+
+  -- W -- B --   --  
+|    |    |    |    |
+W --   -- W --   --  
+|    |    |    |    |
+  -- W -- B --   --  
+|    |    |    |    |
+  --   --   --   --  
+|    |    |    |    |
+  --   --   --   --  
+
+  -- W -- B --   --  
+|    |    |    |    |
+W --   -- W -- B --  
+|    |    |    |    |
+  -- W -- B --   --  
+|    |    |    |    |
+  --   --   --   --  
+|    |    |    |    |
+  --   --   --   --  
+
 ]]></system-out>
   </testcase>
+  <testcase name="groupFindTest" classname="com.game_mechanics_test.BoardTest" time="0.0"/>
+  <testcase name="testNegativeSize" classname="com.game_mechanics_test.BoardTest" time="0.0"/>
 </testsuite>

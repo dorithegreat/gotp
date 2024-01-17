@@ -158,11 +158,13 @@ public class BoardTest {
             gameState.isLegalMove(PieceType.BLACK, new Vector(0, 0))
         );
 
+        // True if field if resulting group has at least one liberty.
         assertEquals(
             true,
             gameState.isLegalMove(PieceType.BLACK, new Vector(3, 0))
         );
 
+        // False if field if resulting group has no liberties.
         assertEquals(
             false,
             gameState.isLegalMove(PieceType.WHITE, new Vector(3, 3))
@@ -173,14 +175,44 @@ public class BoardTest {
             gameState.isLegalMove(PieceType.BLACK, new Vector(3, 3))
         );
 
-        // assertEquals(
-        //     true,
-        //     gameState.isLegalMove(PieceType.WHITE, new Vector(2, 0))
-        // );
+        // More tests if legalMove() correctly evaluates liberties.
+        testBoard = new Board("EWWWE;WBEEW;EWWWE;EEEEE;EEEEE");
+        gameState = new GameState(testBoard);
+        System.out.println(testBoard);
 
-        // assertEquals(
-        //     false,
-        //     gameState.isLegalMove(PieceType.BLACK, new Vector(0, 0))
-        // );
+        assertEquals(
+            true,
+            gameState.isLegalMove(PieceType.BLACK, new Vector(2, 1))
+        );
+
+        testBoard.setField(PieceType.BLACK, new Vector(2, 1));
+        System.out.println(testBoard);
+
+        assertEquals(
+            false,
+            gameState.isLegalMove(PieceType.BLACK, new Vector(3, 1))
+        );
+
+        // Check if capture rule is working
+
+        // If there is no possible captures, move is illegal.
+        testBoard = new Board("EWBEE;WEWEE;EWBEE;EEEEE;EEEEE");
+        gameState = new GameState(testBoard);
+        System.out.println(testBoard);
+
+        assertEquals(
+            false,
+            gameState.isLegalMove(PieceType.BLACK, new Vector(1, 1))
+        );
+
+        // However if we put a black piece in (3, 1), the move will be able to capture.
+        testBoard.setField(PieceType.BLACK, new Vector(3, 1));
+        System.out.println(testBoard);
+
+        // Hence the move is legal.
+        assertEquals(
+            true,
+            gameState.isLegalMove(PieceType.BLACK, new Vector(1, 1))
+        );
     }
 }

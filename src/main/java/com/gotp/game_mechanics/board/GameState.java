@@ -1,8 +1,13 @@
 package com.gotp.game_mechanics.board;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
+import com.gotp.game_mechanics.board.move.Move;
+import com.gotp.game_mechanics.board.move.MovePass;
+import com.gotp.game_mechanics.board.move.MovePlace;
 import com.gotp.game_mechanics.utilities.Vector;
 
 public class GameState {
@@ -17,11 +22,24 @@ public class GameState {
     private Board previousBoard;
 
     /**
+     * Whose turn is it? Value can't be PieceType.EMPTY.
+     */
+    private PieceType turn;
+
+    /**
+     * Keeps track of the score of each player.
+     */
+    private Map<PieceType, Integer> score;
+
+    // TODO: Add history of moves, score, etc.
+
+    /**
      * GameState constructor.
      * @param boardSize
      */
     public GameState(final int boardSize) {
         this.board = new Board(boardSize);
+        initializeScore();
     }
 
      /**
@@ -30,6 +48,76 @@ public class GameState {
      */
     public GameState(final Board board) {
         this.board = board;
+        initializeScore();
+    }
+
+    private void initializeScore() {
+        score = new HashMap<PieceType, Integer>();
+        this.score.put(PieceType.BLACK, 0);
+        this.score.put(PieceType.WHITE, 0);
+    }
+
+    /**
+     * Switches turn from black to white and vice versa.
+     */
+    public void switchTurn() {
+        this.turn = this.turn.opposite();
+    }
+
+
+    /**
+     * Makes a move on the board, checks if it's legal.
+     * TODO: Add move to history.
+     * ? Should this method return a boolean or throw an exception. ?
+     * ? It can fail in 2 ways, but I think boolean is OK for now ?
+     * @param move
+     * @return boolean. True if move was successful, false if not.
+     */
+    public boolean makeMove(final Move move) {
+        if (move instanceof MovePass) {
+            this.switchTurn();
+            return true;
+        }
+        if (move instanceof MovePlace) {
+            MovePlace movePlace = (MovePlace) move;
+
+            PieceType pieceType = movePlace.getPieceType();
+            Vector field = movePlace.getField();
+
+            // Should never happen, but just in case.
+            if (!this.turn.equals(pieceType)) {
+                return false;
+            }
+
+            // check if move is legal
+            if (!this.isLegalMove(pieceType, field)) {
+                return false;
+            }
+
+            // Update previous board.
+            this.previousBoard = this.board.copy();
+
+            // If move is legal, set the field to the piece type.
+            this.board.setField(pieceType, field);
+            List<Group> strangledGroups = this.board.groupsWithoutLiberties();
+
+            // If there are captured groups, remove them from the board and update score.
+            int score = 0;
+            for (Group group : strangledGroups) {
+                if (group.getPieceType() == pieceType.opposite()) {
+                    score += group.size();
+                    this.board.setFields(PieceType.EMPTY, group);
+                }
+            }
+            this.score.put(pieceType, this.score.get(pieceType) + score);
+
+            this.switchTurn();
+
+            return true;
+        }
+
+        // Cannot happen but PMD complains.
+        return false;
     }
 
     /**
