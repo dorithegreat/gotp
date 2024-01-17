@@ -134,14 +134,16 @@ public class BoardTest {
      */
     @Test
     public void legalMoveTest() {
-        Board testBoard = new Board("BBEWE;BBEWW;EEBEW;EEWEW;EEEWE");
+        Board testBoard = new Board("WBBEE;EWWEE;EEEBE;EEBEB;EEEBE");
         GameState gameState = new GameState(testBoard);
+
+        System.out.println(testBoard);
 
 
         // False if piece type is EMPTY.
         assertEquals(
             false,
-            gameState.isLegalMove(PieceType.EMPTY, new Vector(0, 0))
+            gameState.isLegalMove(PieceType.EMPTY, new Vector(0, 1))
         );
 
         // False if field is outside the board.
@@ -156,10 +158,20 @@ public class BoardTest {
             gameState.isLegalMove(PieceType.BLACK, new Vector(0, 0))
         );
 
-        // assertEquals(
-        //     true,
-        //     gameState.isLegalMove(PieceType.BLACK, new Vector(2, 0))
-        // );
+        assertEquals(
+            true,
+            gameState.isLegalMove(PieceType.BLACK, new Vector(3, 0))
+        );
+
+        assertEquals(
+            false,
+            gameState.isLegalMove(PieceType.WHITE, new Vector(3, 3))
+        );
+
+        assertEquals(
+            true,
+            gameState.isLegalMove(PieceType.BLACK, new Vector(3, 3))
+        );
 
         // assertEquals(
         //     true,

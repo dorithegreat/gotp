@@ -13,7 +13,7 @@ import com.gotp.game_mechanics.utilities.Vector;
  * and modify the state of the game. It also checks wchich moves are legal.
  * It's initialized by initializeEmptyBoardMatrix() method.
  */
-public class Board implements Cloneable {
+public class Board {
     /**
      * Defines how big the board is.
      * Has to be strictly greater than 1.
@@ -367,16 +367,17 @@ public class Board implements Cloneable {
     }
 
     /**
-     * Overriden clone method.
+     * Java clone() is shallow and causes me problems.
+     * Use this method instead.
+     * @return Board
      */
-    @Override
-    public Board clone() {
-        try {
-            Board result = (Board) super.clone();
-            result.boardMatrix = this.boardMatrix.clone();
-            return result;
-        } catch (CloneNotSupportedException e) {
-            throw new AssertionError();
+    public Board copy() {
+        Board result = new Board(this.boardSize);
+        for (int i = 0; i < this.boardSize; i++) {
+            for (int ii = 0; ii < this.boardSize; ii++) {
+                result.boardMatrix[i][ii] = this.boardMatrix[i][ii];
+            }
         }
+        return result;
     }
 }

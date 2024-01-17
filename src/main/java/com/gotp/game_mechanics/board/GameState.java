@@ -66,10 +66,15 @@ public class GameState {
 
 
         // Instantiate a new board object.
-        Board boardAfterMove = this.board.clone();
+        Board boardAfterMove = this.board.copy();
 
         // We forcibly set the field to the pieceType. We still don't know if the move is legal.
         boardAfterMove.setField(pieceType, field);
+
+        // If after placing the piece, its group has at least one liberty, the move is legal.
+        if (boardAfterMove.groupLiberties(boardAfterMove.group(field)).size() > 0) {
+            return true;
+        }
 
         // Check if after placing the piece, there is a group with no liberties.
         List<Group> capturedGroups = boardAfterMove.groupsWithoutLiberties();
