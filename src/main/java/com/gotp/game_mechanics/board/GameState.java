@@ -6,30 +6,31 @@ import java.util.List;
 import java.util.Map;
 
 import com.gotp.game_mechanics.board.move.Move;
+import com.gotp.game_mechanics.board.move.MoveGiveUp;
 import com.gotp.game_mechanics.board.move.MovePass;
 import com.gotp.game_mechanics.board.move.MovePlace;
 import com.gotp.game_mechanics.utilities.Vector;
 
 public class GameState {
-    /**
-     * Board object that stores information about the state of the game.
-     */
+    /** Board object that stores information about the state of the game. */
     private Board board;
 
-    /**
-     * Board object that stores information about the state of the game before the last move.
-     */
+    /** Board object that stores information about the state of the game before the last move. */
     private Board previousBoard;
 
-    /**
-     * Whose turn is it? Value can't be PieceType.EMPTY.
-     */
+    /** Whose turn is it? Value can't be PieceType.EMPTY. */
     private PieceType turn;
 
-    /**
-     * Keeps track of the score of each player.
-     */
+    /** Keeps track of the score of each player. */
     private Map<PieceType, Integer> score;
+
+    /** If not null, we won't allow any new moves to be made. */
+    private PieceType winner;
+
+    /** Starting position in this project's standard notation notation. */
+    private String startingPosition; // TODO: implement this.
+
+
 
     // TODO: Add history of moves, score, etc.
 
@@ -57,6 +58,8 @@ public class GameState {
         this.score.put(PieceType.WHITE, 0);
 
         this.turn = PieceType.BLACK;
+
+        this.winner = null;
     }
 
     /**
@@ -70,30 +73,25 @@ public class GameState {
     /**
      * Makes a move on the board, checks if it's legal.
      * TODO: Add move to history.
-     * ? Should this method return a boolean or throw an exception. ?
-     * ? It can fail in 2 ways, but I think boolean is OK for now ?
      * @param move
-     * @return boolean. True if move was successful, false if not.
+     * @return MoveValidity. If move is legal, returns MoveValidity.LEGAL.
      */
-    public boolean makeMove(final Move move) {
+    public MoveValidity makeMove(final Move move) {
         if (move instanceof MovePass) {
             this.switchTurn();
-            return true;
+            return MoveValidity.LEGAL;
         }
+
         if (move instanceof MovePlace) {
             MovePlace movePlace = (MovePlace) move;
 
             PieceType pieceType = movePlace.getPieceType();
             Vector field = movePlace.getField();
 
-            // Should never happen, but just in case.
-            if (!this.turn.equals(pieceType)) {
-                return false;
-            }
-
-            // check if move is legal
-            if (!this.isLegalMove(pieceType, field).isLegal()) {
-                return false;
+            // check if move is legal. If not, return type of illegal move.
+            MoveValidity moveValidity = this.isLegalMove(pieceType, field);
+            if (!moveValidity.isLegal()) {
+                return moveValidity;
             }
 
             // Update previous board.
@@ -108,18 +106,32 @@ public class GameState {
             for (Group group : strangledGroups) {
                 if (group.getPieceType() == pieceType.opposite()) {
                     score += group.size();
-                    this.board.setFields(PieceType.EMPTY, group);
+                    this.board.setFields(PieceType.EMPTY, group); // remove captured group from the board.
                 }
             }
+
+            // Update score.
             this.score.put(pieceType, this.score.get(pieceType) + score);
 
             this.switchTurn();
 
-            return true;
+            return MoveValidity.LEGAL;
         }
 
-        // Cannot happen but PMD complains.
-        return false;
+        if (move instanceof MoveGiveUp) {
+            MoveGiveUp moveGiveUp = (MoveGiveUp) move;
+
+            PieceType pieceType = moveGiveUp.getPieceType();
+
+            // Update previous board.
+            this.previousBoard = this.board.copy();
+
+            this.winner = pieceType.opposite();
+
+            return MoveValidity.LEGAL;
+        }
+
+        throw new IllegalArgumentException("Unknown move type.");
     }
 
     /**
@@ -136,6 +148,11 @@ public class GameState {
         // Check if piece type is valid.
         if (pieceType == PieceType.EMPTY) {
             return MoveValidity.EMPTY_PIECE;
+        }
+
+        // Check if it's a correct turn.
+        if (!this.turn.equals(pieceType)) {
+            return MoveValidity.WRONG_TURN;
         }
 
         // Check if field is on the board.

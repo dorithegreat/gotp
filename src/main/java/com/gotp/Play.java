@@ -3,6 +3,8 @@ package com.gotp;
 import java.util.Scanner;
 
 import com.gotp.game_mechanics.board.GameState;
+import com.gotp.game_mechanics.board.move.MoveGiveUp;
+import com.gotp.game_mechanics.board.move.MovePass;
 import com.gotp.game_mechanics.board.move.MovePlace;
 import com.gotp.game_mechanics.utilities.Vector;
 
@@ -36,6 +38,17 @@ public final class Play {
             move = scanner.nextLine();
 
             if ("exit".equals(move)) {
+                status = false;
+                continue;
+            }
+
+            if ("pass".equals(move)) {
+                gameState.makeMove(new MovePass(gameState.getTurn()));
+                continue;
+            }
+
+            if ("give up".equals(move)) {
+                gameState.makeMove(new MoveGiveUp(gameState.getTurn()));
                 status = false;
                 continue;
             }

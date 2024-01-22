@@ -3,17 +3,17 @@ package com.gotp.game_mechanics.board.move;
 import com.gotp.game_mechanics.board.PieceType;
 
 /**
- * Represents a pass move.
+ * Player can at any moment give up.
  */
-public class MovePass implements Move {
-    /** Who passes? */
+public class MoveGiveUp implements Move {
+    /** Which player gives up? */
     private PieceType pieceType;
 
     /**
-     * Pass constructor.
+     * GiveUp constructor.
      * @param pieceType
      */
-    public MovePass(final PieceType pieceType) {
+    public MoveGiveUp(final PieceType pieceType) {
         this.pieceType = pieceType;
     }
 

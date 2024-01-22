@@ -140,8 +140,7 @@ public class BoardTest {
         Board testBoard = new Board("WBBEE;EWWEE;EEEBE;EEBEB;EEEBE");
         GameState gameState = new GameState(testBoard);
 
-        // System.out.println(testBoard);
-
+        // -------------------- Basic illegal moves --------------------
 
         // False if piece type is EMPTY.
         assertEquals(
@@ -178,45 +177,58 @@ public class BoardTest {
             gameState.isLegalMove(PieceType.BLACK, new Vector(3, 3))
         );
 
-        // More tests if legalMove() correctly evaluates liberties.
+
+        // -------------------- Evalutation of liberties --------------------
+
         testBoard = new Board("EWWWE;WBEEW;EWWWE;EEEEE;EEEEE");
         gameState = new GameState(testBoard);
-        // System.out.println(testBoard);
 
+        // First move should be legal
         assertEquals(
             MoveValidity.LEGAL,
             gameState.isLegalMove(PieceType.BLACK, new Vector(2, 1))
         );
 
         testBoard.setField(PieceType.BLACK, new Vector(2, 1));
-        // System.out.println(testBoard);
 
+        // but this one will strangle the group.
         assertEquals(
             MoveValidity.SUICIDE,
             gameState.isLegalMove(PieceType.BLACK, new Vector(3, 1))
         );
 
-        // Check if capture rule is working
 
-        // If there is no possible captures, move is illegal.
+        // -------------------- Capture tests --------------------
+
+        // If there are no possible captures, move is illegal.
         testBoard = new Board("EWBEE;WEWEE;EWBEE;EEEEE;EEEEE");
         gameState = new GameState(testBoard);
-        // System.out.println(testBoard);
 
+        // Piece has no liberties after placement.
         assertEquals(
             MoveValidity.SUICIDE,
             gameState.isLegalMove(PieceType.BLACK, new Vector(1, 1))
         );
 
-        // However if we put a black piece in (3, 1), the move will be able to capture.
+        // However if we put a black piece in (3, 1), the move will be able to capture
         testBoard.setField(PieceType.BLACK, new Vector(3, 1));
-        // System.out.println(testBoard);
 
-        // Hence the move is legal.
+        // Hence it will have liberties and the move is legal.
         assertEquals(
             MoveValidity.LEGAL,
             gameState.isLegalMove(PieceType.BLACK, new Vector(1, 1))
         );
+
+        // -------------------- Testing Ko rule (Repetition) --------------------
+
+        testBoard = new Board("EWBEE;WEWBE;EWBEE;EEEEE;EEEEE");
+        gameState = new GameState(testBoard);
+
+        
+        gameState.makeMove(new MovePlace(new Vector(1, 1), PieceType.BLACK));
+        
+        
+        System.out.println(gameState);
     }
 
     /**
@@ -228,11 +240,11 @@ public class BoardTest {
 
         GameState gameState = new GameState(testBoard);
 
-        System.out.println(gameState);
+        // System.out.println(gameState);
 
 
         gameState.makeMove(new MovePlace(new Vector(1, 1), PieceType.BLACK));
-        System.out.println(gameState);
+        // System.out.println(gameState);
 
         MovePlace secondMove = new MovePlace(new Vector(2, 1), PieceType.WHITE);
         gameState.makeMove(secondMove);
@@ -240,21 +252,6 @@ public class BoardTest {
             gameState.isLegalMove(PieceType.WHITE, new Vector(2, 1)).getMessage()
         );
 
-        System.out.println(gameState);
-
-        // gameState.makeMove(new MovePlace(new Vector(0, 0), PieceType.BLACK));
-        // System.out.println(gameState);
-
-        // gameState.makeMove(new MovePlace(new Vector(0, 1), PieceType.BLACK));
-        // System.out.println(gameState);
-
-        // gameState.makeMove(new MovePlace(new Vector(0, 1), PieceType.WHITE));
-        // System.out.println(gameState);
-
-        // gameState.makeMove(new MovePlace(new Vector(3, 3), PieceType.BLACK));
-        // System.out.println(gameState);
-
-        // gameState.makeMove(new MovePlace(new Vector(1, 0), PieceType.WHITE));
         // System.out.println(gameState);
     }
 }

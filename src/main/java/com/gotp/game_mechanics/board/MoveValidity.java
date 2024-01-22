@@ -12,6 +12,9 @@ public enum MoveValidity {
     /** Returned when trying to place PieceType.EMPTY. */
     EMPTY_PIECE("Piece you place has to be either black or white."),
 
+    /** Returned when trying to place on wrong turn. */
+    WRONG_TURN("It's not your turn to place a piece."),
+
     /** Returned when trying to place a piece on a field that is already occupied. */
     OUTSIDE_BOARD("You can't place a piece outside of the board."),
 
