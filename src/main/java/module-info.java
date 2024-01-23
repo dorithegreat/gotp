@@ -3,5 +3,6 @@ module com.gotp {
     requires javafx.fxml;
 
     opens com.gotp to javafx.fxml;
+    opens com.gotp.GUIcontrollers to javafx.fxml;
     exports com.gotp;
 }

@@ -309,6 +309,7 @@ public class Board {
 
     // -------------------- Overriden methods --------------------
 
+
     /**
      * Overriden equals method.
      */

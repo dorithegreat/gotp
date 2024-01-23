@@ -9,7 +9,8 @@ import javafx.stage.Stage;
 import java.io.IOException;
 
 /**
- * JavaFX App
+ * main class used mostly for GUI testing purposes.
+ * will eventually be deleted
  */
 public class App extends Application {
 
@@ -22,9 +23,13 @@ public class App extends Application {
     // private final int SCENE_HEIGHT = 480;
 
 
+    /**
+     * standard javafx start method.
+     * Currently starts the "testScene" scene
+     */
     @Override
-    public void start(Stage stage) throws IOException {
-        scene = new Scene(loadFXML("testScene"));
+    public void start(final Stage stage) throws IOException {
+        scene = new Scene(loadFXML("GUIcontrollers/testScene"));
         stage.setScene(scene);
         stage.show();
     }
