@@ -291,4 +291,18 @@ public class BoardTest {
 
         assertEquals(expectedLiberties, calculatedLiberties);
     }
+
+    /**
+     * Test for standardBoardString() method.
+     */
+    @Test
+    public void standardStringTest() {
+        String testString = "WWWW;BWBW;WBWB;BBBB;";
+        Board testBoard = new Board(testString);
+
+        System.out.println(testString);
+        System.out.println(testBoard.standardBoardString());
+
+        assertEquals(testString, testBoard.standardBoardString());
+    }
 }

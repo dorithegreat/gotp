@@ -380,6 +380,21 @@ public class Board {
     }
 
     /**
+     * Returns board as a standard string.
+     * @return String
+     */
+    public String standardBoardString() {
+        String result = "";
+        for (int i = 0; i < this.boardSize; i++) {
+            for (int ii = 0; ii < this.boardSize; ii++) {
+                result += this.boardMatrix[ii][i].shortName();
+            }
+            result += ";";
+        }
+        return result;
+    }
+
+    /**
      * Java clone() is shallow and causes me problems.
      * Use this method instead.
      * @return Board

@@ -22,20 +22,14 @@ public class GameState {
     private PieceType turn;
 
     /** Keeps track of the score of each player. */
-    private Map<PieceType, Integer> score;
+    private Map<PieceType, Double> score;
 
-    /** If not null, we won't allow any new moves to be made. */
-    private PieceType winner;
-
-    /** Starting position in this project's standard notation notation. */
-    private String startingPosition; // TODO: implement this.
-
-
-
-    // TODO: Add history of moves, score, etc.
+    /** History of every move. */
+    private GameHistory history;
 
     /**
      * GameState constructor.
+     * Creates a new Game with empty board with size `boardSize`.
      * @param boardSize
      */
     public GameState(final int boardSize) {
@@ -45,7 +39,9 @@ public class GameState {
 
      /**
      * GameState constructor.
+     * Creates a new Game with an existing board.
      * @param board
+     * @param turn
      */
     public GameState(final Board board, final PieceType turn) {
         this.board = board;
@@ -53,14 +49,33 @@ public class GameState {
         this.turn = turn;
     }
 
+    /**
+     * GameState constructor.
+     * Creates a new Game with a standard String representation of the board.
+     * @param standardBoardString
+     * @param turn
+     */
+    public GameState(final String standardBoardString, final PieceType turn) {
+        this.board = new Board(standardBoardString);
+        initializeGame();
+        this.turn = turn;
+    }
+
+    /**
+     * Initializes some game variables.
+     */
     private void initializeGame() {
-        score = new HashMap<PieceType, Integer>();
-        this.score.put(PieceType.BLACK, 0);
-        this.score.put(PieceType.WHITE, 0);
+        score = new HashMap<PieceType, Double>();
+
+        final double komi = 6.5;
+
+        this.score.put(PieceType.BLACK, 0d);
+        this.score.put(PieceType.WHITE, komi);
 
         this.turn = PieceType.BLACK;
 
-        this.winner = null;
+        this.history = new GameHistory(this.turn, this.board.toString());
+        this.history.setWinner(null);
     }
 
     /**
@@ -70,20 +85,16 @@ public class GameState {
         this.turn = this.turn.opposite();
     }
 
-
     /**
      * Makes a move on the board, checks if it's legal.
-     * TODO: Add move to history.
      * @param move
      * @return MoveValidity. If move is legal, returns MoveValidity.LEGAL.
      */
     public MoveValidity makeMove(final Move move) {
         if (move instanceof MovePass) {
             this.switchTurn();
-            return MoveValidity.LEGAL;
-        }
 
-        if (move instanceof MovePlace) {
+        } else if (move instanceof MovePlace) {
             MovePlace movePlace = (MovePlace) move;
 
             PieceType pieceType = movePlace.getPieceType();
@@ -116,10 +127,7 @@ public class GameState {
 
             this.switchTurn();
 
-            return MoveValidity.LEGAL;
-        }
-
-        if (move instanceof MoveGiveUp) {
+        } else if (move instanceof MoveGiveUp) {
             MoveGiveUp moveGiveUp = (MoveGiveUp) move;
 
             PieceType pieceType = moveGiveUp.getPieceType();
@@ -129,10 +137,13 @@ public class GameState {
 
             this.winner = pieceType.opposite();
 
-            return MoveValidity.LEGAL;
+        } else {
+            // should never happen.
+            throw new IllegalArgumentException("Unknown move type.");
         }
 
-        throw new IllegalArgumentException("Unknown move type.");
+        history.add(move);
+        return MoveValidity.LEGAL;
     }
 
     /**
@@ -204,7 +215,6 @@ public class GameState {
         }
 
         // If there are captured groups, remove them from the board.
-        // ? Is it possible to capture more than one group at once ? I'm not sure, but regardless, this will work.
         for (Group group : capturedOpponentGroups) {
             boardAfterMove.setFields(PieceType.EMPTY, group);
         }
@@ -223,6 +233,13 @@ public class GameState {
      */
     public PieceType getTurn() {
         return this.turn;
+    }
+
+    /**
+     * Returns `this.history`.
+     */
+    public GameHistory getHistory() {
+        return this.history;
     }
 
     /**
