@@ -6,19 +6,12 @@ import com.gotp.game_mechanics.utilities.Vector;
 
 /**
  * Represents a group in Go.
- * A group is a set of stones of the same color 
+ * A group is a set of stones of the same color
  * that are connected by a chain of adjacent stones of the same color.
  */
-public class Group extends HashSet<Vector> { 
+public class Group extends HashSet<Vector> {
+    /** Group contain pieces of the same color. */
     private PieceType pieceType;
-
-    /**
-     * Getter for pieceType.
-     * @return pieceType
-     */
-    public PieceType getPieceType() {
-        return this.pieceType;
-    }
 
     /**
      * Group constructor.
@@ -46,6 +39,14 @@ public class Group extends HashSet<Vector> {
         for (Vector vector : collection) {
             this.add(vector);
         }
+    }
+
+    /**
+     * Getter for pieceType.
+     * @return pieceType
+     */
+    public PieceType getPieceType() {
+        return this.pieceType;
     }
 
     /**

@@ -1,4 +1,4 @@
 -------------------------------------------------------------------------------
 Test set: com.game_mechanics_test.BoardTest
 -------------------------------------------------------------------------------
-Tests run: 5, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.093 s -- in com.game_mechanics_test.BoardTest
+Tests run: 7, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.087 s -- in com.game_mechanics_test.BoardTest

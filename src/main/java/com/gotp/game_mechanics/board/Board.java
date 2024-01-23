@@ -14,16 +14,15 @@ import com.gotp.game_mechanics.utilities.Vector;
  * It's initialized by initializeEmptyBoardMatrix() method.
  */
 public class Board {
-    /**
-     * Defines how big the board is.
-     * Has to be strictly greater than 1.
-     */
+    /** Defines how big the board is. Has to be strictly greater than 1. */
     private int boardSize;
 
-    /**
-     * An `boardSize` x `boardSize` sized 2D array that stores information aboout pieces.
-     */
+    /** An `boardSize` x `boardSize` sized 2D array that stores information aboout pieces. */
     private PieceType[][] boardMatrix;
+
+
+    // -------------------- Constructors --------------------
+
 
     /**
      * Board constructor.
@@ -78,6 +77,10 @@ public class Board {
     public int getBoardSize() {
         return boardSize;
     }
+
+
+    // -------------------- Getter and setter methods --------------------
+
 
     /**
      * Returns piece type of the given coordinates.
@@ -140,13 +143,24 @@ public class Board {
     }
 
 
+    // -------------------- Group methods --------------------
+
     /**
      * Calcluates all neighbours of the given field.
      * @param coordinates
      * @return 4, 3 or 2 neighbours of the given field.
      */
-    public List<Vector> neighbours(final Vector coordinates) {
-        ArrayList<Vector> result = new ArrayList<Vector>();
+    public Set<Vector> neighbours(final Vector coordinates) {
+        if (
+            coordinates.getX() < 0
+            || coordinates.getX() >= this.boardSize
+            || coordinates.getY() < 0
+            || coordinates.getY() >= this.boardSize
+        ) {
+            throw new IllegalArgumentException("Coordinates are outside of the board!");
+        }
+
+        Set<Vector> result = new HashSet<Vector>();
 
         // before adding the neighbour, we have to check if it's not outside of the board.
         if (coordinates.getX() > 0) {
@@ -221,37 +235,10 @@ public class Board {
     }
 
     /**
-     * Returns board as a string.
-     */
-    @Override
-    public String toString() {
-        String result = "";
-        for (int i = 0; i < this.boardSize; i++) {
-            result += this.boardMatrix[0][i].shortName();
-            for (int ii = 1; ii < this.boardSize; ii++) {
-                result += " -- " + this.boardMatrix[ii][i].shortName();
-            }
-            result += "\n";
-
-            if (i == this.boardSize - 1) {
-                break;
-            }
-
-            result += "|";
-            for (int ii = 1; ii < this.boardSize; ii++) {
-                result += "    |";
-            }
-            result += "\n";
-        }
-        return result;
-    }
-
-    /**
      * Returns a list of empty fields.
-     * @param playerColor
      * @return HashSet of empty fields.
      */
-    public Set<Vector> emptyFields(final PieceType playerColor) {
+    public Set<Vector> emptyFields() {
 
         HashSet<Vector> emptyFields = new HashSet<Vector>();
 
@@ -266,7 +253,6 @@ public class Board {
 
         return emptyFields;
     }
-
 
     /**
      * Returns single piece's liberties.
@@ -294,8 +280,8 @@ public class Board {
      * @param group
      * @return List of liberties.
      */
-    public List<Vector> groupLiberties(final Group group) {
-        List<Vector> result = new ArrayList<Vector>();
+    public Set<Vector> groupLiberties(final Group group) {
+        Set<Vector> result = new HashSet<Vector>();
 
         for (Vector field : group) {
             result.addAll(this.liberties(field));
@@ -319,6 +305,9 @@ public class Board {
 
         return result;
     }
+
+
+    // -------------------- Overriden methods --------------------
 
     /**
      * Overriden equals method.
@@ -361,6 +350,32 @@ public class Board {
         int result = prime1;
         result = prime2 * result + this.boardSize;
         result = prime2 * result + Arrays.deepHashCode(this.boardMatrix);
+        return result;
+    }
+
+    /**
+     * Returns board as a string.
+     */
+    @Override
+    public String toString() {
+        String result = "";
+        for (int i = 0; i < this.boardSize; i++) {
+            result += this.boardMatrix[0][i].shortName();
+            for (int ii = 1; ii < this.boardSize; ii++) {
+                result += " -- " + this.boardMatrix[ii][i].shortName();
+            }
+            result += "\n";
+
+            if (i == this.boardSize - 1) {
+                break;
+            }
+
+            result += "|";
+            for (int ii = 1; ii < this.boardSize; ii++) {
+                result += "    |";
+            }
+            result += "\n";
+        }
         return result;
     }
 

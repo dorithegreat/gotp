@@ -47,9 +47,10 @@ public class GameState {
      * GameState constructor.
      * @param board
      */
-    public GameState(final Board board) {
+    public GameState(final Board board, final PieceType turn) {
         this.board = board;
         initializeGame();
+        this.turn = turn;
     }
 
     private void initializeGame() {
@@ -65,7 +66,7 @@ public class GameState {
     /**
      * Switches turn from black to white and vice versa.
      */
-    public void switchTurn() {
+    private void switchTurn() {
         this.turn = this.turn.opposite();
     }
 
