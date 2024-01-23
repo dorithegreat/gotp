@@ -33,8 +33,7 @@
 -->
 
 <?import javafx.scene.control.Button?>
-<?import javafx.scene.control.RadioButton?>
-<?import javafx.scene.control.ToggleGroup?>
+<?import javafx.scene.control.Slider?>
 <?import javafx.scene.layout.AnchorPane?>
 <?import javafx.scene.layout.VBox?>
 <?import javafx.scene.text.Font?>
@@ -44,20 +43,13 @@
   <children>
     <AnchorPane id="background" fx:id="background" maxHeight="-1.0" maxWidth="-1.0" prefHeight="-1.0" prefWidth="-1.0" style="-fx-background-color: #ebd071;" VBox.vgrow="ALWAYS">
       <children>
-            <RadioButton fx:id="button9" layoutX="221.0" layoutY="164.0" mnemonicParsing="false" onAction="#choose9x9" text="9x9">
-               <toggleGroup>
-                  <ToggleGroup fx:id="abc" />
-               </toggleGroup>
-            </RadioButton>
-            <RadioButton fx:id="button11" layoutX="221.0" layoutY="182.0" mnemonicParsing="false" onAction="#choose11x11" text="11x11" toggleGroup="$abc" />
-            <RadioButton fx:id="button15" layoutX="221.0" layoutY="200.0" mnemonicParsing="false" onAction="#choose15x15" text="15x15" toggleGroup="$abc" />
-            <RadioButton fx:id="button19" layoutX="221.0" layoutY="218.0" mnemonicParsing="false" onAction="#choose19x19" text="19x19" toggleGroup="$abc" />
-            <Button layoutX="335.0" layoutY="187.0" mnemonicParsing="false" onAction="#startGame" text="Start" />
+            <Button layoutX="413.0" layoutY="187.0" mnemonicParsing="false" onAction="#startGame" text="Start" />
             <Text fill="#19511e" layoutX="186.0" layoutY="132.0" strokeType="OUTSIDE" strokeWidth="0.0" text="Pick the size of the board" textAlignment="CENTER">
                <font>
                   <Font name="Leelawadee UI" size="24.0" />
                </font>
             </Text>
+            <Slider blockIncrement="1.0" layoutX="158.0" layoutY="193.0" majorTickUnit="2.0" max="23.0" min="7.0" minorTickCount="1" prefHeight="39.0" prefWidth="176.0" showTickLabels="true" showTickMarks="true" snapToTicks="true" />
       </children>
     </AnchorPane>
   </children>
