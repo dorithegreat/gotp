@@ -3,7 +3,6 @@ package com.gotp.game_mechanics.board;
 import com.gotp.game_mechanics.board.move.Move;
 
 import java.util.ArrayList;
-import java.util.List;
 import java.util.Map;
 
 public class GameHistory extends ArrayList<Move> {

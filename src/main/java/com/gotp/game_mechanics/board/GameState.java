@@ -135,7 +135,7 @@ public class GameState {
             // Update previous board.
             this.previousBoard = this.board.copy();
 
-            this.winner = pieceType.opposite();
+            this.history.setWinner(pieceType.opposite());
 
         } else {
             // should never happen.
@@ -237,6 +237,7 @@ public class GameState {
 
     /**
      * Returns `this.history`.
+     * @return GameHistory
      */
     public GameHistory getHistory() {
         return this.history;
