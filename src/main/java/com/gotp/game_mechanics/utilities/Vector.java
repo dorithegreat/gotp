@@ -88,4 +88,12 @@ public class Vector {
     public int hashCode() {
         return Objects.hash(this.x, this.y);
     }
+
+    /**
+     * Returns string representation of the vector.
+     */
+    @Override
+    public String toString() {
+        return "Vec(" + this.x + ", " + this.y + ")";
+    }
 }
