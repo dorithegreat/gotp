@@ -6,8 +6,7 @@ import javafx.fxml.FXMLLoader;
 import javafx.scene.Node;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
-import javafx.scene.control.RadioButton;
-import javafx.scene.control.ToggleGroup;
+import javafx.scene.control.Slider;
 import javafx.stage.Stage;
 
 import java.io.IOException;
@@ -15,67 +14,25 @@ import java.io.IOException;
 public class TestSceneController {
 
     /**
-     * toggle group containing buttons, so that only one of them can be chosen at once.
+     * slider for selecting the size of the board.
      */
     @FXML
-    private ToggleGroup abc;
-
+    private Slider slider;
     /**
-     * button to choose 11x11 board size.
+     * default size of the board in case the size is somehow not selected.
      */
-    @FXML
-    private RadioButton button11;
-
-    /**
-     * button to choose 15x15 board size.
-     */
-    @FXML
-    private RadioButton button15;
-
-    /**
-     * button to choose 19x19 board size.
-     */
-    @FXML
-    private RadioButton button19;
-
-    /**
-     * button to choose 9x9 board size.
-     */
-    @FXML
-    private RadioButton button9;
-
+    private final int DEFAULT_SIZE = 9;
 
     /**
      * size of the board that will be created.
      */
-    private int size = 9;
+    private int size = DEFAULT_SIZE;
 
     /**
      * controller of the next scene.
      * Is needed so that the size of the board can be set from the current controller
      */
     private BoardController boardController = new BoardController();
-
-    @FXML
-    void choose11x11(final ActionEvent event) {
-        size = 11;
-        System.out.println("chose 11");
-    }
-
-    @FXML
-    void choose15x15(final ActionEvent event) {
-        size = 15;
-    }
-
-    @FXML
-    void choose19x19(final ActionEvent event) {
-        size = 19;
-    }
-
-    @FXML
-    void choose9x9(final ActionEvent event) {
-        size = 9;
-    }
 
     /**
      * Handler for the start button, goes to the board screen and starts the game.
@@ -88,6 +45,10 @@ public class TestSceneController {
         Parent root;
         Stage stage;
         Scene scene;
+
+        //size = (int) slider.getValue();
+        //System.out.println(slider.getValue());
+        //size = 19;
 
         FXMLLoader boardLoader = new FXMLLoader(getClass().getResource("board.fxml"));
         root = boardLoader.load();
