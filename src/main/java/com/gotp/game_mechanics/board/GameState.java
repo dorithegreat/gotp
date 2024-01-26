@@ -11,6 +11,12 @@ import com.gotp.game_mechanics.board.move.MovePass;
 import com.gotp.game_mechanics.board.move.MovePlace;
 import com.gotp.game_mechanics.utilities.Vector;
 
+/**
+ * This class represents state of the Game.
+ * It's a Facade for Borad class.
+ * It can modyfy the board, only by making legal moves.
+ * It also keeps track of the score and history of the game.
+ */
 public class GameState {
     /** Board object that stores information about the state of the game. */
     private Board board;
@@ -225,6 +231,15 @@ public class GameState {
         }
 
         return MoveValidity.LEGAL;
+    }
+
+    /**
+     * Getter for `board`.
+     * * This can't return reference to `this.board`, cause someone could modyfy it.
+     * @return Board
+     */
+    public Board getBoardCopy() {
+        return this.board.copy();
     }
 
     /**

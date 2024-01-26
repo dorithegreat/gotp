@@ -6,19 +6,14 @@ import static org.junit.Assert.assertThat;
 import static org.hamcrest.CoreMatchers.is;
 
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
 import org.junit.Test;
 
 import com.gotp.game_mechanics.board.Board;
-import com.gotp.game_mechanics.board.GameState;
 import com.gotp.game_mechanics.board.Group;
-import com.gotp.game_mechanics.board.MoveValidity;
 import com.gotp.game_mechanics.board.PieceType;
-import com.gotp.game_mechanics.board.move.MovePass;
-import com.gotp.game_mechanics.board.move.MovePlace;
 import com.gotp.game_mechanics.utilities.Vector;
 
 public class BoardTest {

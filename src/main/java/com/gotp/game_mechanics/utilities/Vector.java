@@ -1,12 +1,13 @@
 package com.gotp.game_mechanics.utilities;
 
+import java.io.Serializable;
 import java.util.Objects;
 
 /**
  * Used mostly to store pairs of numbers (x, y) in a handy way.
  * Equiped with methods that make working with pairs of numbers easier.
  */
-public class Vector {
+public class Vector implements Serializable {
     /** First component of the vector. */
     private int x;
 
