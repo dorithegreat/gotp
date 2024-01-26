@@ -49,7 +49,7 @@
                   <Font name="Leelawadee UI" size="24.0" />
                </font>
             </Text>
-            <Slider blockIncrement="1.0" layoutX="158.0" layoutY="193.0" majorTickUnit="2.0" max="23.0" min="7.0" minorTickCount="1" prefHeight="39.0" prefWidth="176.0" showTickLabels="true" showTickMarks="true" snapToTicks="true" />
+            <Slider fx:id="selectorSlider" blockIncrement="1.0" layoutX="158.0" layoutY="193.0" majorTickUnit="2.0" max="23.0" min="7.0" minorTickCount="1" prefHeight="39.0" prefWidth="176.0" showTickLabels="true" showTickMarks="true" snapToTicks="true" />
       </children>
     </AnchorPane>
   </children>
