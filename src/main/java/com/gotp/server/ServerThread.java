@@ -1,9 +1,15 @@
 package com.gotp.server;
 
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.ObjectInputStream;
+import java.io.PipedInputStream;
+import java.io.PipedOutputStream;
 import java.net.Socket;
 
+// import com.gotp.server.messages.Message;
 import com.gotp.server.messages.MessageDebug;
+// import com.gotp.server.messages.MessageGameRequestPVP;
 
 public class ServerThread implements Runnable {
 
@@ -41,17 +47,6 @@ public class ServerThread implements Runnable {
                 responseMessage = new MessageDebug("*** " + receivedMessage.getDebugMessage() + " ***");
                 client.send(responseMessage);
             }
-            // MessageDebug receivedMessage = (MessageDebug) client.receive();
-
-
-
-            // Example response to the client
-            // MessageDebug responseMessage = new MessageDebug(
-            //     "Server received: " + receivedMessage.getDebugMessage()
-            // );
-
-            // objectOutput.writeObject(responseMessage);
-            // client.send(responseMessage);
 
             // Close the connection when done
             client.close();

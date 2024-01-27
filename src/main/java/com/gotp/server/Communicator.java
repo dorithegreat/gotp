@@ -60,4 +60,20 @@ public class Communicator {
         objectInput.close();
         objectOutput.close();
     }
+
+    /**
+     * Get input stream.
+     * @return Input stream.
+     */
+    public ObjectInputStream getObjectInput() {
+        return objectInput;
+    }
+
+    /**
+     * Get output stream.
+     * @return Output stream.
+     */
+    public ObjectOutputStream getObjectOutput() {
+        return objectOutput;
+    }
 }

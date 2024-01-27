@@ -1,5 +1,8 @@
 package com.gotp.server.messages;
 
+import com.gotp.server.messages.enums.MessageFunction;
+import com.gotp.server.messages.enums.MessageType;
+
 public interface Message {
     /**
      * What is the purpose of the message?

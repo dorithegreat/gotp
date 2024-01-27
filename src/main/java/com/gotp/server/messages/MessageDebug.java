@@ -2,6 +2,9 @@ package com.gotp.server.messages;
 
 import java.io.Serializable;
 
+import com.gotp.server.messages.enums.MessageFunction;
+import com.gotp.server.messages.enums.MessageType;
+
 public class MessageDebug implements Message, Serializable {
     /** Debug message. */
     private String debugMessage;

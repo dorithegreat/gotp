@@ -205,7 +205,12 @@ public class Board {
                 newFieldsToCheck.addAll(this.neighbours(field));
             }
             newFieldsToCheck.removeAll(alreadyChecked);
-            fieldsToCheck = (HashSet<Vector>) newFieldsToCheck.clone();
+
+            Object temp = newFieldsToCheck.clone();
+            if (temp instanceof HashSet<?>) {
+                fieldsToCheck = (HashSet<Vector>) temp;
+            }
+            // fieldsToCheck = (HashSet<Vector>) newFieldsToCheck.clone();
         }
 
         return new Group(result, searchedColor);

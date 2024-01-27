@@ -33,13 +33,13 @@ public final class Client {
 
             while (true) {
                 // Send a message to the server
-                System.out.print("[->] ");
-                input = scanner.nextLine();
-                server.send(new MessageDebug(input));
+                // System.out.print("[->] ");
+                // input = scanner.nextLine();
+                // server.send(new MessageDebug(input));
 
-                if ("exit".equals(input)) {
-                    break;
-                }
+                // if ("exit".equals(input)) {
+                //     break;
+                // }
 
                 // Receive a message from the server
                 response = server.receive();
@@ -50,8 +50,8 @@ public final class Client {
             }
 
             // Close the connection
-            server.close();
-            scanner.close();
+            // server.close();
+            // scanner.close();
 
         } catch (IOException | ClassNotFoundException e) {
             e.printStackTrace();
