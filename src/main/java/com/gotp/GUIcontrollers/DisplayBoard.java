@@ -2,6 +2,7 @@ package com.gotp.GUIcontrollers;
 
 import com.gotp.game_mechanics.board.PieceType;
 import com.gotp.game_mechanics.utilities.Vector;
+import com.gotp.server.BoardCommunicator;
 
 import javafx.scene.layout.GridPane;
 
@@ -15,6 +16,11 @@ public class DisplayBoard extends GridPane{
     private BoardPiece[][] pieces;
 
     /**
+     * communicator class for sending messages to the client
+     */
+    private BoardCommunicator communicator = BoardCommunicator.getInstance();
+
+    /**
      * constructor. Populates the board with nxn grid of BoardPieces
      * @param n size of the board
      */
@@ -24,10 +30,14 @@ public class DisplayBoard extends GridPane{
         for(int i = 0; i < n; i++){
             for(int j = 0; j < n; j++){
                 BoardPiece piece = new BoardPiece();
+                piece.linkToBoard(this);
+                piece.setCoordinates(new Vector(i, j));
                 add(piece, i, j);
                 pieces[i][j] = piece;
             }
         }
+
+        setGridLinesVisible(true);
     }
 
     /**
@@ -40,6 +50,6 @@ public class DisplayBoard extends GridPane{
     }
 
     public void notifyOfChange(Vector coordinates, PieceType color){
-        // TODO link with a controller or communicator and send a message to the server
+        communicator.send("move");
     }
 }

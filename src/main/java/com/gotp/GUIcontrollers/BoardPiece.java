@@ -28,7 +28,7 @@ public class BoardPiece extends StackPane {
      * in the finished project this information will be coming from the server
      * and this field will be obsolete
      */
-    private static PieceType nextTurn = PieceType.BLACK;
+    private static PieceType player = PieceType.BLACK;
 
     /**
      * current state of the piece.
@@ -44,24 +44,30 @@ public class BoardPiece extends StackPane {
      */
     public BoardPiece() {
         super();
+
+        //sets the background of every tile to a nice light blue
+        setStyle("-fx-background-color: #abcdef");
+
+        //creates a circle (player's stone) and hides it by default
+        //this circle is the only content of this stack pane, but it can be expanded in the future
         Circle circle = new Circle(20);
         circle.setVisible(false);
         getChildren().add(circle);
+
+        //adds handler to the circle that manages it's behavior when clicked
         setOnMouseClicked(new EventHandler<MouseEvent>() {
             @Override
             public void handle(final MouseEvent e) {
-                // if (currentState == State.EMPTY) { //cannot put piece on a taken spot
-                //     if (nextTurn == State.WHITE) {
-                //         circle.setFill(Color.WHITE);
-                //         currentState = State.WHITE;
-                //         nextTurn = State.BLACK;
-                //     } else {
-                //         circle.setFill(Color.BLACK);
-                //         currentState = State.BLACK;
-                //         nextTurn = State.WHITE;
-                //     }
-                //     circle.setVisible(true);
-                // }
+                board.notifyOfChange(coordinates, currentState);
+                if (player == PieceType.WHITE) {
+                    circle.setFill(Color.WHITE);
+                    currentState = PieceType.WHITE;
+                }
+                else if(player == PieceType.BLACK) {
+                    circle.setFill(Color.BLACK);
+                    currentState = PieceType.BLACK;
+                }
+                circle.setVisible(true);
             }
         });
     }
