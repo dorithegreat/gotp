@@ -27,18 +27,12 @@ public class TestSceneController implements Initializable {
     /**
      * default size of the board in case the size is somehow not selected.
      */
-    private final int DEFAULT_SIZE = 9;
+    private static final int DEFAULT_SIZE = 9;
 
     /**
      * size of the board that will be created.
      */
     private int size = DEFAULT_SIZE;
-
-    /**
-     * controller of the next scene.
-     * Is needed so that the size of the board can be set from the current controller
-     */
-    private BoardController boardController = new BoardController();
 
     /**
      * adds a change listener to the selectorSlider when this object is created.

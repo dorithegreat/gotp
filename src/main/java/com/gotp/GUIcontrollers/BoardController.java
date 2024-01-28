@@ -12,6 +12,9 @@ import javafx.stage.Stage;
 
 import java.io.IOException;
 
+import com.gotp.server.BoardCommunicator;
+import com.gotp.server.Client;
+
 public class BoardController {
 
     /**
@@ -32,6 +35,21 @@ public class BoardController {
     @FXML
     private Button resignButton;
 
+    /**
+     * the client app controlling this board.
+     */
+    private BoardCommunicator communicator = BoardCommunicator.getInstance();
+
+    private DisplayBoard board;
+
+
+    public BoardController(){
+        communicator.setBoard(this);
+    }
+
+    public void doSomething(){
+        System.out.println("did something");
+    }
 
     /**
      * generates the board.
@@ -50,12 +68,12 @@ public class BoardController {
 
     /**
      * function for passing the turn.
-     * * currently always switches to the winning screen. This is obviously just for testing.
+     * * currently always switches to the   winning screen. This is obviously just for testing.
      * @param event the event that triggered this method
      */
      @FXML
     void pass(final ActionEvent event) {
-
+        communicator.send("pass");
     }
 
     /**
@@ -64,7 +82,11 @@ public class BoardController {
      * @param event the event that triggered this method
      */
     @FXML
-    void resign(final ActionEvent event) throws IOException {
+    void resign(final ActionEvent event) {
+        communicator.send("resign");
+    }
+
+    public void swtichToEndScreen() throws IOException {
         //a few declarations that will be necessary for changing the scene
         Parent root;
         Stage stage;
@@ -77,10 +99,16 @@ public class BoardController {
         //TODO do whatever is necessery with the end screen here
 
         //code that changes the scene
-        stage = (Stage) ((Node) event.getSource()).getScene().getWindow();
+
+        //a workaround, gets stage for the grid, which is also the stage this controller is for
+        stage = (Stage) grid.getScene().getWindow();
         scene = new Scene(root);
         stage.setScene(scene);
         stage.show();
+    }
+
+    public void createBoard(int n){
+        board = new DisplayBoard(n);
     }
 
 }

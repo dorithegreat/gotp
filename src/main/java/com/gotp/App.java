@@ -49,7 +49,7 @@ public class App extends Application {
      * @param args
      */
     public static void main(final String[] args) {
-        launch();
+        // launch();
     }
 
 }
