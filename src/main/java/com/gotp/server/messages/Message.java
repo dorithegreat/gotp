@@ -2,6 +2,7 @@ package com.gotp.server.messages;
 
 import com.gotp.server.messages.enums.MessageFunction;
 import com.gotp.server.messages.enums.MessageType;
+import com.gotp.server.messages.enums.MessageTarget;
 
 public interface Message {
     /**
@@ -15,4 +16,10 @@ public interface Message {
      * @return The type of message.
     */
     MessageType getType();
+
+    /**
+     * Get target of the message.
+     * @return The target of the message.
+     */
+    MessageTarget getTarget();
 }

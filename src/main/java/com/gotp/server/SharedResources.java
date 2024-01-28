@@ -1,10 +1,10 @@
 package com.gotp.server;
 
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.List;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.BlockingQueue;
 
 import com.gotp.server.messages.Message;
@@ -23,7 +23,7 @@ public final class SharedResources {
     private Map<Socket, BlockingQueue<Message>> clients = Collections.synchronizedMap(new HashMap<>());
 
     /** Players waiting to join a PVP game. */
-    private List<Integer> waitList = Collections.synchronizedList(new ArrayList<>());
+    private Set<GameRequest> waitList = Collections.synchronizedSet(new HashSet<>());
 
     /**
      * Constructor is private to prevent instantiation.
@@ -43,7 +43,7 @@ public final class SharedResources {
      * Get the wait list.
      * @return Wait list.
      */
-    public List<Integer> getWaitList() {
+    public Set<GameRequest> getWaitList() {
         return waitList;
     }
 
@@ -53,7 +53,7 @@ public final class SharedResources {
      * @param socket
      * @return ObjectOutputStream to write() to a client.
      */
-    public BlockingQueue<Message> getClientEntry(final Socket socket) {
+    public BlockingQueue<Message> getClientQueue(final Socket socket) {
         return this.clients.get(socket);
     }
 

@@ -9,17 +9,31 @@ import java.util.concurrent.BlockingQueue;
 
 import com.gotp.server.messages.Message;
 import com.gotp.server.messages.MessageDebug;
-import com.gotp.server.messages.MessageSubscribe;
+import com.gotp.server.messages.subscription_messages.MessageSubscribeAccept;
+import com.gotp.server.messages.subscription_messages.MessageSubscribeRequest;
+import com.gotp.server.messages.enums.MessageTarget;
+import com.gotp.server.messages.server_thread_messages.MessageGameRequestPVP;
 
+
+/**
+ * This class is responsible for forwarding messages
+ * to and from the client. It allows to be subcribed
+ * to in order for multiple threads to be able to
+ * receive messages from the client.
+ */
 public class Forwarder implements Runnable {
 
     /** Socket to communicate with the client. */
     private final Socket clientSocket;
 
-    /** Input stream to receive messages. */
+    /**
+     * Queue to which every thread writes to, and which gets
+     * either forwarded to client or if it's a subscribe request,
+     * added to subscribers.
+     */
     private final BlockingQueue<Message> entry;
 
-    /** Output streams (subscribers). */
+    /** List of subscribed threads. */
     private List<BlockingQueue<Message>> subscribers = Collections.synchronizedList(new ArrayList<>());
 
     /**
@@ -33,20 +47,28 @@ public class Forwarder implements Runnable {
     }
 
     /**
-     * Send client's messages to all subscribers.
+     * This thread is responsibble for forwarding messages
+     * FROM the client to every subscribed thread.
      */
     @Override
     public void run() {
         try {
-            System.out.println("### Forwarder Started! ###");
+            // Create a new communicator for the client
             Communicator client = new Communicator(clientSocket);
             Message receivedMessage;
 
+            // Run a reverse thread. More info in the method below.
             new Thread(() -> manageIncomingMessages(client, subscribers, entry)).start();
 
-            // Receive an object from the client
+            // Listen for messages from the client.
             while (true) {
                 receivedMessage = client.receive();
+
+                // If the message is a game request, we need to add the client socket.
+                if (receivedMessage instanceof MessageGameRequestPVP) {
+                    final int boardSize = ((MessageGameRequestPVP) receivedMessage).getBoardSize();
+                    receivedMessage = new MessageGameRequestPVP(clientSocket, boardSize);
+                }
 
                 for (BlockingQueue<Message> subscriber : subscribers) {
                     subscriber.put(receivedMessage);
@@ -61,8 +83,8 @@ public class Forwarder implements Runnable {
     }
 
     /**
-     * Thread for adding new subscribers
-     * and forwarding messages to client.
+     * This thread forwards messages from THREADS
+     * to the client. It also handles subscribe requests.
      * @param clientCommunicator
      * @param subscribers
      * @param entry
@@ -75,23 +97,29 @@ public class Forwarder implements Runnable {
         try {
             Message receivedMessage;
 
-            MessageSubscribe subscribeRequest;
-
-            MessageDebug debugMessage;
-
+            // Listen for messages from threads.
             while (true) {
                 receivedMessage = entry.take();
 
-                if (receivedMessage instanceof MessageSubscribe) {
-                    System.out.println("Forwarder received subscribe request.");
-                    subscribeRequest = (MessageSubscribe) receivedMessage;
-                    subscribers.add(subscribeRequest.getOut());
-                    subscribeRequest.getOut().put(new MessageDebug("Accepted!"));
+                // Handle subcribe requests.
+                if (receivedMessage instanceof MessageSubscribeRequest) {
+                    MessageSubscribeRequest subscribeRequest = (MessageSubscribeRequest) receivedMessage;
+                    subscribers.add(subscribeRequest.getThreadQueue());
+                    subscribeRequest.getThreadQueue().put(new MessageSubscribeAccept());
 
+                // Handle debug messages.
                 } else if (receivedMessage instanceof MessageDebug) {
-                    debugMessage = (MessageDebug) receivedMessage;
-                    System.out.println("Forwarder received: " + debugMessage.getDebugMessage());
-                    clientCommunicator.send(receivedMessage);
+                    MessageDebug debugMessage = (MessageDebug) receivedMessage;
+
+                    // Determine for whom the debug message is.
+                    if (debugMessage.getTarget() == MessageTarget.FORWARDER) {
+                        System.out.println("Forwarder debug: " + debugMessage.getDebugMessage());
+
+                    } else if (debugMessage.getTarget() == MessageTarget.CLIENT) {
+                        clientCommunicator.send(receivedMessage);
+                    }
+
+                // Forward rest of the messages to the client.
                 } else {
                     clientCommunicator.send(receivedMessage);
                 }

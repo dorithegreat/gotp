@@ -8,8 +8,6 @@ import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
 
 import com.gotp.server.messages.Message;
-import com.gotp.server.messages.MessageDebug;
-import com.gotp.server.messages.MessageSubscribe;
 
 /**
  * Main server.
@@ -28,68 +26,73 @@ public final class Server {
     public static void main(final String[] args) {
         final int portNumber = 12345;
         ServerThread serverThread;
-        ServerThread serverThread2;
+        Socket clientSocket;
 
         try (ServerSocket serverSocket = new ServerSocket(portNumber)) {
             System.out.println("### Server Started! ###");
 
             while (true) {
-                Socket clientSocket = serverSocket.accept();
-                System.out.println("Client connected: " + clientSocket.getInetAddress());
+                clientSocket = serverSocket.accept();
+                createClientOnServer(clientSocket);
 
-                // This queue will be used to send data to and from the forwarder
-                BlockingQueue<Message> forwarderEntry = new LinkedBlockingQueue<>();
-
-                // out queue for forwarder to send messages with.
-                SharedResources.getInstance().addClient(clientSocket, forwarderEntry);
-                Forwarder clientForwarder = new Forwarder(clientSocket, forwarderEntry);
-
-
-                // Handle the client in a new thread
-                // serverThread = new ServerThread(clientSocket);
-
-                // new Thread(serverThread).start();
-                new Thread(clientForwarder).start();
-
-                forwarderEntry.put(new MessageDebug("Hello from server!"));
-
-                new Thread(() -> threadPrintWhatYouGet(clientSocket)).start();
-                // new Thread(() -> sendOneDebugMessage(clientSocket)).start();
+                serverThread = new ServerThread(clientSocket);
+                new Thread(serverThread).start();
             }
-        } catch (IOException | InterruptedException e) {
+        } catch (IOException e) {
             e.printStackTrace();
         }
     }
 
     /**
-     * Send a message to a client.
-     * @param destinationSocket
+     * Create a client on the server.
+     * Put his quue in the shared resources
+     * so that other threads can send them messages.
+     * @param clientSocket
      * @throws IOException
      */
-    public static void threadPrintWhatYouGet(final Socket destinationSocket) {
-        try {
-            SharedResources
-                .getInstance()
-                .getClientEntry(destinationSocket)
-                .put(new MessageDebug("Hello another Thread!"));
+    public static void createClientOnServer(final Socket clientSocket) throws IOException {
 
-            BlockingQueue<Message> myQueue = new LinkedBlockingQueue<>();
+        System.out.println("Client connected: " + clientSocket.getInetAddress());
 
-            MessageSubscribe subscribeRequest = new MessageSubscribe(myQueue);
+        // This queue will be used to send data to the client.
+        BlockingQueue<Message> forwarderEntry = new LinkedBlockingQueue<>();
+        SharedResources.getInstance().addClient(clientSocket, forwarderEntry);
 
-            SharedResources
-                .getInstance()
-                .getClientEntry(destinationSocket)
-                .put(subscribeRequest);
+        // Forwarder is used to send data to the client and forward messages from client to many threads.
+        Forwarder clientForwarder = new Forwarder(clientSocket, forwarderEntry);
 
-            Message response = myQueue.take();
-
-            if (response instanceof MessageDebug) {
-                System.out.println("Subscribe request was: " + ((MessageDebug) response).getDebugMessage());
-            }
-
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
+        new Thread(clientForwarder).start();
     }
+
+    // /**
+    //  * Send a message to a client.
+    //  * @param destinationSocket
+    //  * @throws IOException
+    //  */
+    // public static void threadPrintWhatYouGet(final Socket destinationSocket) {
+    //     try {
+    //         SharedResources
+    //             .getInstance()
+    //             .getClientQueue(destinationSocket)
+    //             .put(new MessageDebug("Hello another Thread!"));
+
+    //         BlockingQueue<Message> myQueue = new LinkedBlockingQueue<>();
+
+    //         MessageSubscribe subscribeRequest = new MessageSubscribe(myQueue);
+
+    //         SharedResources
+    //             .getInstance()
+    //             .getClientQueue(destinationSocket)
+    //             .put(subscribeRequest);
+
+    //         Message response = myQueue.take();
+
+    //         if (response instanceof MessageDebug) {
+    //             System.out.println("Subscribe request was: " + ((MessageDebug) response).getDebugMessage());
+    //         }
+
+    //     } catch (InterruptedException e) {
+    //         e.printStackTrace();
+    //     }
+    // }
 }

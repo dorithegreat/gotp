@@ -5,7 +5,7 @@ import java.net.Socket;
 import java.util.Scanner;
 
 import com.gotp.server.messages.Message;
-import com.gotp.server.messages.MessageDebug;
+import com.gotp.server.messages.server_thread_messages.MessageGameRequestPVP;
 
 /**
  * Client.
@@ -32,21 +32,21 @@ public final class Client {
             Message response;
 
             while (true) {
-                // Send a message to the server
-                // System.out.print("[->] ");
-                // input = scanner.nextLine();
-                // server.send(new MessageDebug(input));
+                input = "";
 
-                // if ("exit".equals(input)) {
-                //     break;
-                // }
-
-                // Receive a message from the server
-                response = server.receive();
-                if (response instanceof MessageDebug) {
-                    System.out.println("[<-] " + ((MessageDebug) response).getDebugMessage());
+                scanner = new Scanner(System.in);
+                System.out.print("Enter a message: ");
+                input = scanner.nextLine();
+                if ("pvp".equals(input)) {
+                    final MessageGameRequestPVP message = new MessageGameRequestPVP(null, 19);
+                    server.send(message);
                 }
 
+                // Receive a message from the server
+                // response = server.receive();
+                // if (response instanceof MessageDebug) {
+                //     System.out.println("[<-] " + ((MessageDebug) response).getDebugMessage());
+                // }
             }
 
             // Close the connection

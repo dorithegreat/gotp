@@ -1,20 +1,26 @@
 package com.gotp.server;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.ObjectInputStream;
-import java.io.PipedInputStream;
-import java.io.PipedOutputStream;
 import java.net.Socket;
+import java.util.Set;
+import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.LinkedBlockingQueue;
 
-// import com.gotp.server.messages.Message;
+import com.gotp.server.messages.Message;
 import com.gotp.server.messages.MessageDebug;
-// import com.gotp.server.messages.MessageGameRequestPVP;
+import com.gotp.server.messages.server_thread_messages.MessageGameRequestPVP;
+import com.gotp.server.messages.subscription_messages.MessageSubscribeAccept;
+import com.gotp.server.messages.subscription_messages.MessageSubscribeRequest;
 
 public class ServerThread implements Runnable {
 
     /** Socket to communicate with the client. */
-    private final Socket clientSocket;
+    private BlockingQueue<Message> clientQueue;
+
+    /** This thread's queue to read data from other threads. */
+    private BlockingQueue<Message> threadQueue;
+
+    /** Socket of the client whoose thread this is. */
+    private Socket clientSocket;
 
     /**
      * Constructor.
@@ -22,6 +28,8 @@ public class ServerThread implements Runnable {
      */
     public ServerThread(final Socket clientSocket) {
         this.clientSocket = clientSocket;
+        this.clientQueue = SharedResources.getInstance().getClientQueue(clientSocket);
+        this.threadQueue = new LinkedBlockingQueue<>();
     }
 
     /**
@@ -30,28 +38,78 @@ public class ServerThread implements Runnable {
     @Override
     public void run() {
         try {
-            Communicator client = new Communicator(clientSocket);
+            subscribeToClient();
 
-            MessageDebug receivedMessage;
-            MessageDebug responseMessage;
-
-            // Receive an object from the client
+            // Listen for messages.
+            Message receivedMessage;
             while (true) {
-                receivedMessage = (MessageDebug) client.receive();
-                System.out.println("Received from client: " + receivedMessage.getDebugMessage());
-
-                if ("exit".equals(receivedMessage.getDebugMessage())) {
-                    break;
+                // for now just print the message.
+                receivedMessage = threadQueue.take();
+                if (receivedMessage instanceof MessageDebug) {
+                    System.out.println("[ServerThread Debug] " + ((MessageDebug) receivedMessage).getDebugMessage());
                 }
 
-                responseMessage = new MessageDebug("*** " + receivedMessage.getDebugMessage() + " ***");
-                client.send(responseMessage);
+                if (receivedMessage instanceof MessageGameRequestPVP) {
+                    handleGameRequestPVP((MessageGameRequestPVP) receivedMessage);
+                }
+                // threadQueue.put(new MessageDebug("Server Response: Well cum!"));
             }
-
-            // Close the connection when done
-            client.close();
-        } catch (IOException | ClassNotFoundException e) {
+        } catch (InterruptedException e) {
+            System.out.println("ServerThread interrupted!");
             e.printStackTrace();
         }
+    }
+
+    /**
+     * Subscribe to the client.
+     * @throws InterruptedException
+     */
+    public void subscribeToClient() throws InterruptedException {
+        MessageSubscribeRequest subscribeRequest = new MessageSubscribeRequest(threadQueue);
+        clientQueue.put(subscribeRequest);
+
+        Message receivedMessage = threadQueue.take();
+
+        if (!(receivedMessage instanceof MessageSubscribeAccept)) {
+            throw new RuntimeException("Expected MessageSubscribeAccept, got " + receivedMessage.getClass().getName());
+        }
+    }
+
+    /**
+     * Handle a PVP game request.
+     * @param gameRequestMessage
+     * @throws InterruptedException
+     */
+    public void handleGameRequestPVP(final MessageGameRequestPVP gameRequestMessage) throws InterruptedException {
+        System.out.println("ServerThread: Received a PVP game request.");
+
+        // Add the client to the wait list.
+        GameRequest gameRequest = new GameRequest(this.clientSocket, gameRequestMessage.getBoardSize());
+
+        Set<GameRequest> waitList = SharedResources.getInstance().getWaitList();
+
+        for (GameRequest request : waitList) {
+            if (
+                request.getBoardSize() == gameRequest.getBoardSize()
+                && request.getRequestingClient() == gameRequest.getRequestingClient()
+            ) {
+                // This request is already in the wait list.
+                return;
+
+            } else if (request.getBoardSize() == gameRequest.getBoardSize()) {
+                System.out.println("Found a match!");
+                // Found a match!
+                // Remove the request from the wait list.
+                waitList.remove(request);
+
+                // TODO create a game with the two players.
+                // System.out.println();
+
+                return;
+            }
+        }
+
+        waitList.add(gameRequest);
+        System.out.println("Added to wait list.");
     }
 }
