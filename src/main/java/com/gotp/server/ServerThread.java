@@ -7,6 +7,7 @@ import java.util.concurrent.LinkedBlockingQueue;
 
 import com.gotp.server.messages.Message;
 import com.gotp.server.messages.MessageDebug;
+import com.gotp.server.messages.enums.MessageTarget;
 import com.gotp.server.messages.server_thread_messages.MessageGameRequestPVP;
 import com.gotp.server.messages.subscription_messages.MessageSubscribeAccept;
 import com.gotp.server.messages.subscription_messages.MessageSubscribeRequest;
@@ -45,7 +46,10 @@ public class ServerThread implements Runnable {
             while (true) {
                 // for now just print the message.
                 receivedMessage = threadQueue.take();
-                if (receivedMessage instanceof MessageDebug) {
+                if (
+                    receivedMessage instanceof MessageDebug
+                    && receivedMessage.getTarget() == MessageTarget.SERVER_THREAD
+                ) {
                     System.out.println("[ServerThread Debug] " + ((MessageDebug) receivedMessage).getDebugMessage());
                 }
 
@@ -123,6 +127,7 @@ public class ServerThread implements Runnable {
                 // run the game thread.
                 Thread thread = new Thread(gameThread);
                 thread.start();
+                return;
             }
         }
 

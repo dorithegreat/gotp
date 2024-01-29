@@ -28,7 +28,7 @@ public class MessageMoveFromServer implements Message, Serializable {
      */
     @Override
     public MessageTarget getTarget() {
-        return MessageTarget.GAME_THREAD;
+        return MessageTarget.CLIENT;
     }
 
     /**
@@ -47,7 +47,7 @@ public class MessageMoveFromServer implements Message, Serializable {
 
     @Override
     public MessageType getType() {
-        return MessageType.MOVE_FROM_CLIENT;
+        return MessageType.MOVE_FROM_SERVER;
     }
 
     /**

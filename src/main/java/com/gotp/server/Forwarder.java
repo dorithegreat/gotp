@@ -103,6 +103,7 @@ public class Forwarder implements Runnable {
 
                 // Handle subcribe requests.
                 if (receivedMessage instanceof MessageSubscribeRequest) {
+                    System.out.println("Forwarder: Received subscribe request!");
                     MessageSubscribeRequest subscribeRequest = (MessageSubscribeRequest) receivedMessage;
                     subscribers.add(subscribeRequest.getThreadQueue());
                     subscribeRequest.getThreadQueue().put(new MessageSubscribeAccept());

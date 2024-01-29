@@ -8,11 +8,13 @@ import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
 
 import com.gotp.game_mechanics.board.GameState;
+import com.gotp.game_mechanics.board.MoveValidity;
 import com.gotp.game_mechanics.board.PieceType;
+import com.gotp.game_mechanics.board.move.Move;
 import com.gotp.server.messages.Message;
 import com.gotp.server.messages.MessageDebug;
-import com.gotp.server.messages.enums.MessageTarget;
 import com.gotp.server.messages.game_thread_messages.MessageGameStarted;
+import com.gotp.server.messages.game_thread_messages.MessageMoveFromClient;
 import com.gotp.server.messages.subscription_messages.MessageSubscribeRequest;
 
 /**
@@ -38,9 +40,9 @@ public class GameThread implements Runnable {
 
         try {
             player1Queue.put(subscribeToPlayer1);
-            player1Queue.take();
+            gameThreadQueue.take();
             player2Queue.put(subscribeToPlayer2);
-            player2Queue.take();
+            gameThreadQueue.take();
         } catch (InterruptedException e) {
             System.out.println("GameThread: Interrupted while subscribing to clients!");
             e.printStackTrace();
@@ -106,18 +108,86 @@ public class GameThread implements Runnable {
 
         GameState gameState = new GameState(boardSize);
 
-        while (true) {
-            try {
+        try {
+            while (true) {
+                System.out.println(gameState);
                 Message message = readQueue.take();
+                System.out.println("chuj");
                 if (message instanceof MessageDebug) {
                     MessageDebug messageDebug = (MessageDebug) message;
                     System.out.println("[GameThread] " + messageDebug.getDebugMessage());
                 }
-            } catch (InterruptedException e) {
-                System.out.println("GameThread: Interrupted while reading from readQueue!");
-                e.printStackTrace();
+
+                if (message instanceof MessageMoveFromClient) {
+                    System.out.println("GameThread: Received move from client!");
+                    handleMoveFromClient((MessageMoveFromClient) message, gameState);
+                }
             }
+        } catch (InterruptedException e) {
+            System.out.println("GameThread: Interrupted while reading from readQueue!");
+            e.printStackTrace();
         }
+    }
+
+    /**
+     * Handle move from client.
+     * @param message
+     * @param gameState
+     */
+    private void handleMoveFromClient(final MessageMoveFromClient message, final GameState gameState) {
+        // check if the authentication key is valid.
+
+        System.out.println("GameThread: Received move from client: " + message.getMove());
+
+        int authenticationKey = message.getAuthenticationKey();
+        if (!properAuthenticationKey(authenticationKey)) {
+            System.out.println("GameThread: Authentication key is not valid!");
+            return;
+        }
+
+        // check which player made the move.
+        Player player = getPlayerFromAuthenticationKey(authenticationKey);
+        PieceType pieceType = playerPieceType.get(player);
+
+        // check if this player is allowed to make a move with this color.
+        Move move = message.getMove();
+        if (move.getPieceType() != pieceType) {
+            System.out.println("GameThread: Player tried to place a piece of wrong color!");
+            return;
+        }
+
+        // Make a move and check if it's legal.
+        MoveValidity moveValidity = gameState.makeMove(move);
+
+        if (moveValidity.isLegal()) {
+            System.out.println(gameState);
+            // TODO: send the move to the other player.
+        } else {
+            System.out.println("GameThread: Player tried to make an invalid move: " + moveValidity.getMessage());
+        }
+    }
+
+    /**
+     * Get player from authentication key.
+     * @param authenticationKey
+     * @return Player
+     */
+    private Player getPlayerFromAuthenticationKey(final int authenticationKey) {
+        if (authenticationKey == this.authenticationKey.get(Player.PLAYER1)) {
+            return Player.PLAYER1;
+        } else {
+            return Player.PLAYER2;
+        }
+    }
+
+    /**
+     * Check if the authentication key is valid.
+     * @param authenticationKey
+     * @return boolean
+     */
+    private boolean properAuthenticationKey(final int authenticationKey) {
+        return authenticationKey == this.authenticationKey.get(Player.PLAYER1)
+            || authenticationKey == this.authenticationKey.get(Player.PLAYER2);
     }
 
     /**
