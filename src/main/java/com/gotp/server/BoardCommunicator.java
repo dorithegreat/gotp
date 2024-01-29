@@ -2,9 +2,16 @@ package com.gotp.server;
 
 import com.gotp.GUIcontrollers.BoardController;
 import com.gotp.GUIcontrollers.DisplayBoard;
+import com.gotp.game_mechanics.board.GameState;
+import com.gotp.game_mechanics.board.MoveValidity;
 import com.gotp.game_mechanics.board.PieceType;
+import com.gotp.game_mechanics.board.move.MovePlace;
 import com.gotp.game_mechanics.utilities.Vector;
 
+/**
+ * acts as a bridge between the client and the GUI part of the board
+ * also validates moves passing through it
+ */
 public final class BoardCommunicator {
     /**
      * the only instance of this class (singleton).
@@ -28,6 +35,18 @@ public final class BoardCommunicator {
      * * THIS MIGHT END UP BEING REFACTORED
      */
     private DisplayBoard board;
+
+    /**
+     * stores all data about current state of the game. 
+     * also processes moves.
+     */
+    private GameState state;
+
+    /**
+     * color of the player
+     */
+    private PieceType player;
+
 
     private BoardCommunicator() {
 
@@ -62,6 +81,19 @@ public final class BoardCommunicator {
         // TODO implement
     }
 
+    public boolean checkValidity(Vector coords){
+        MoveValidity validity = state.makeMove(new MovePlace(coords, player));
+        if (validity == MoveValidity.LEGAL) {
+            send("valid move");
+            return true;
+        }
+        else{
+            System.out.println("invalid move " + coords.getX() + " " + coords.getY() + " " + validity);
+            return false;
+        }
+
+    }
+
 
     //--------------------------------------------------------------
     //                  getters and setters
@@ -79,8 +111,9 @@ public final class BoardCommunicator {
      * sets the BoardController 
      * @param controller the controller
      */
-    public void setBoardContrller(BoardController controller){
+    public void setBoardContrller(BoardController controller, int n){
         boardController = controller;
+        state = new GameState(n);
     }
     
     /**
@@ -99,4 +132,7 @@ public final class BoardCommunicator {
         return client;
     }
 
+    public void setPlayer(PieceType color){
+        player = color;
+    }
 }

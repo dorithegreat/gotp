@@ -98,7 +98,8 @@ public class TestSceneController implements Initializable {
         BoardController boardController = boardLoader.getController();
 
         //calls method in the other controller to create a board of certain size
-        boardController.createBoard(size);
+        boardController.setSize(size);
+        boardController.createBoard();
 
         if (bot.isSelected() == true) {
             boardController.requestMode("bot");

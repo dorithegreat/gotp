@@ -12,8 +12,8 @@ import javafx.stage.Stage;
 import java.io.IOException;
 
 import com.gotp.server.BoardCommunicator;
-import com.gotp.server.Client;
 
+//javafx controller for board.fxml
 public class BoardController {
 
     /**
@@ -42,14 +42,12 @@ public class BoardController {
 
     private DisplayBoard board;
 
+    /**
+     * size of the board (nxn)
+     */
+    private int size;
 
-    public BoardController(){
-        communicator.setBoardContrller(this);
-    }
 
-    public void doSomething(){
-        System.out.println("did something");
-    }
 
     /**
      * function for passing the turn.
@@ -90,12 +88,18 @@ public class BoardController {
         stage.show();
     }
 
-    public void createBoard(int n){
-        board = new DisplayBoard(n);
+    public void createBoard(){
+        board = new DisplayBoard(size);
         leftSide.setCenter(board);
+
+        communicator.setBoardContrller(this, size);
     }
 
     public void requestMode(String mode) {
         communicator.send(mode);
+    }
+
+    public void setSize(int n){
+        size = n;
     }
 }

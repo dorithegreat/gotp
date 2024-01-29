@@ -49,7 +49,7 @@ public class DisplayBoard extends GridPane{
         return pieces[coords.getX()][coords.getY()].getCurrentColor();
     }
 
-    public void notifyOfChange(Vector coordinates, PieceType color){
-        communicator.send("move");
+    public boolean check(Vector coordinates){
+        return communicator.checkValidity(coordinates);
     }
 }

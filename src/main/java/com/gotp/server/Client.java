@@ -14,24 +14,27 @@ import javafx.scene.Scene;
 
 import com.gotp.GUIcontrollers.BoardController;
 import com.gotp.game_mechanics.board.GameState;
+import com.gotp.game_mechanics.board.PieceType;
 import com.gotp.server.messages.Message;
 import com.gotp.server.messages.MessageDebug;
+import com.gotp.server.messages.MessageFunction;
+import com.gotp.server.messages.MessageGameRequestPVP;
 
 /**
  * Client.
  */
 public final class Client extends Application {
 
-    /**
-     * stores all data about current state of the game. 
-     * also processes moves.
-     */
-    private GameState state;
+    public enum GameType {
+        PVP, BOT, REPLAY
+    }
 
     /**
      * communicator with the GUI part of the board
      */
     private BoardCommunicator board;
+
+    private Communicator server;
 
     /** Private constructor. Disallow instantiation. */
     public Client() { }
@@ -50,15 +53,11 @@ public final class Client extends Application {
 
         board = BoardCommunicator.getInstance();
         board.setClient(this);
-        try { //inside try-catch because it most likely doesn't yet exist
-            board.getBoard().doSomething();
-        } catch (Exception e) {
-            System.out.println("not yet initialized");
-        }
+        board.setPlayer(PieceType.BLACK);
         
         try (Socket socket = new Socket(serverAddress, serverPort)) {
             System.out.println("Connected to server.");
-            Communicator server = new Communicator(socket); //sends communication with the server through a specialized class
+            server = new Communicator(socket); //sends communication with the server through a specialized class
 
             String input;
             Message response;
@@ -110,6 +109,9 @@ public final class Client extends Application {
      * @param message currently a string, will probably be changed to an enum later on
      */
     public void sendToServer(String message){
+        //all messages will be replaced with actual message types
+        //probably I will also replace the string with an enum
+
         System.out.println("would've sent a message to the server: " + message);
     }
 
@@ -121,4 +123,60 @@ public final class Client extends Application {
         System.out.println("started");
         launch();
     }
+
+    //------------------------------------------------------
+    //          functions for sending info to server
+    //------------------------------------------------------
+
+    /**
+     * communicates player's last move to the server
+     * it has already been checked if it's legal
+     * if it's returned as invalid something went deeply wrong
+     */
+    public void sendMove(){
+        server.send(/*move message */);
+        Message response = server.receive();
+        if (response.getFunction() == MessageFunction.RESPONSE) {
+            //check for validity
+            //if invalid get game state from server and pass it to board
+        }
+        else {
+            //it's an error
+            //deal with it somehow
+        }
+    }
+
+    /**
+     * sends a message to the server that the user wants to pass
+     */
+    public void sendPass(){
+        server.send(/*pass message */);
+        Message response = server.receive();
+        //process the response
+    }
+
+    /**
+     * sends a message that the user wants to immediately lose the game and disconnect
+     */
+    public void sendResign(){
+        server.send(/*resign message */);
+        Message response = server.receive();
+        //process the response
+    }
+
+    public void requestGameMode(GameType mode){
+        switch (mode) {
+            case PVP:
+                server.send(new MessageGameRequestPVP());
+                //process response
+                break;
+            case BOT:
+                server.send(/*MessageGameRequestBot */);
+            case REPLAY:
+                server.send(/*message request replay */);
+            default:
+                break;
+        }
+    }
+
 }
