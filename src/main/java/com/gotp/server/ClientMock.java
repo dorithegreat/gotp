@@ -13,10 +13,10 @@ import com.gotp.server.messages.server_thread_messages.MessageGameRequestPVP;
 /**
  * Client.
  */
-public final class Client {
+public final class ClientMock {
 
     /** Private constructor. Disallow instantiation. */
-    private Client() { }
+    private ClientMock() { }
 
     /**
      * Main method.
