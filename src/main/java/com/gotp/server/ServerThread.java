@@ -10,6 +10,7 @@ import com.gotp.server.messages.MessageDebug;
 import com.gotp.server.messages.server_thread_messages.MessageGameRequestPVP;
 import com.gotp.server.messages.subscription_messages.MessageSubscribeAccept;
 import com.gotp.server.messages.subscription_messages.MessageSubscribeRequest;
+import com.gotp.server.players.HumanPlayer;
 
 public class ServerThread implements Runnable {
 
@@ -101,6 +102,28 @@ public class ServerThread implements Runnable {
                 // Found a match!
                 // Remove the request from the wait list.
                 waitList.remove(request);
+
+                BlockingQueue<Message> player1Queue = SharedResources
+                                                        .getInstance()
+                                                        .getClientQueue(request.getRequestingClient());
+
+                BlockingQueue<Message> player2Queue = SharedResources
+                                                        .getInstance()
+                                                        .getClientQueue(gameRequest.getRequestingClient());
+
+                BlockingQueue<Message> gameThreadQueue = new LinkedBlockingQueue<>();
+
+                MessageSubscribeRequest subscribeToPlayer1 = new MessageSubscribeRequest(gameThreadQueue);
+                MessageSubscribeRequest subscribeToPlayer2 = new MessageSubscribeRequest(gameThreadQueue);
+
+                player1Queue.put(subscribeToPlayer1);
+                player1Queue.take();
+                player2Queue.put(subscribeToPlayer2);
+                player2Queue.take();
+
+                GameThread gameThread = new GameThread(gameThreadQueue, player1Queue, player2Queue);
+                Thread thread = new Thread(gameThread);
+                thread.start();
 
                 // TODO create a game with the two players.
                 // System.out.println();

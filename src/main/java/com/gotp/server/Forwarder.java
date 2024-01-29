@@ -9,10 +9,10 @@ import java.util.concurrent.BlockingQueue;
 
 import com.gotp.server.messages.Message;
 import com.gotp.server.messages.MessageDebug;
+import com.gotp.server.messages.MessageWithSocket;
 import com.gotp.server.messages.subscription_messages.MessageSubscribeAccept;
 import com.gotp.server.messages.subscription_messages.MessageSubscribeRequest;
 import com.gotp.server.messages.enums.MessageTarget;
-import com.gotp.server.messages.server_thread_messages.MessageGameRequestPVP;
 
 
 /**
@@ -64,12 +64,12 @@ public class Forwarder implements Runnable {
             while (true) {
                 receivedMessage = client.receive();
 
-                // If the message is a game request, we need to add the client socket.
-                if (receivedMessage instanceof MessageGameRequestPVP) {
-                    final int boardSize = ((MessageGameRequestPVP) receivedMessage).getBoardSize();
-                    receivedMessage = new MessageGameRequestPVP(clientSocket, boardSize);
+                // If the message needs clientSocket, we need to add it.
+                if (receivedMessage instanceof MessageWithSocket) {
+                    receivedMessage = ((MessageWithSocket) receivedMessage).addClientSocket(clientSocket);
                 }
 
+                // send the message to every subscriber.
                 for (BlockingQueue<Message> subscriber : subscribers) {
                     subscriber.put(receivedMessage);
                 }
