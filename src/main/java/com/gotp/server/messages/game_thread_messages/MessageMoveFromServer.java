@@ -1,11 +1,9 @@
 package com.gotp.server.messages.game_thread_messages;
 
 import java.io.Serializable;
-import java.net.Socket;
 
 import com.gotp.game_mechanics.board.move.Move;
 import com.gotp.server.messages.Message;
-import com.gotp.server.messages.MessageWithSocket;
 import com.gotp.server.messages.enums.MessageFunction;
 import com.gotp.server.messages.enums.MessageTarget;
 import com.gotp.server.messages.enums.MessageType;

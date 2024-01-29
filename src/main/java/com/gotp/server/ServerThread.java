@@ -10,7 +10,6 @@ import com.gotp.server.messages.MessageDebug;
 import com.gotp.server.messages.server_thread_messages.MessageGameRequestPVP;
 import com.gotp.server.messages.subscription_messages.MessageSubscribeAccept;
 import com.gotp.server.messages.subscription_messages.MessageSubscribeRequest;
-import com.gotp.server.players.HumanPlayer;
 
 public class ServerThread implements Runnable {
 
@@ -84,54 +83,50 @@ public class ServerThread implements Runnable {
     public void handleGameRequestPVP(final MessageGameRequestPVP gameRequestMessage) throws InterruptedException {
         System.out.println("ServerThread: Received a PVP game request.");
 
-        // Add the client to the wait list.
+        // New game request object.
         GameRequest gameRequest = new GameRequest(this.clientSocket, gameRequestMessage.getBoardSize());
 
+        // Get the wait list.
         Set<GameRequest> waitList = SharedResources.getInstance().getWaitList();
 
+        // loop over every request in the wait list.
         for (GameRequest request : waitList) {
+            // This request is already in the wait list.
             if (
                 request.getBoardSize() == gameRequest.getBoardSize()
                 && request.getRequestingClient() == gameRequest.getRequestingClient()
             ) {
-                // This request is already in the wait list.
                 return;
 
+            // Found a match!
             } else if (request.getBoardSize() == gameRequest.getBoardSize()) {
                 System.out.println("Found a match!");
-                // Found a match!
-                // Remove the request from the wait list.
-                waitList.remove(request);
 
-                BlockingQueue<Message> player1Queue = SharedResources
-                                                        .getInstance()
-                                                        .getClientQueue(request.getRequestingClient());
+                // Remove these and every other request from these 2, from the wait list.
+                for (GameRequest seachedRequest : waitList) {
+                    if (seachedRequest.getRequestingClient() == request.getRequestingClient()) {
+                        waitList.remove(seachedRequest);
+                    }
 
-                BlockingQueue<Message> player2Queue = SharedResources
-                                                        .getInstance()
-                                                        .getClientQueue(gameRequest.getRequestingClient());
+                    if (seachedRequest.getRequestingClient() == gameRequest.getRequestingClient()) {
+                        waitList.remove(seachedRequest);
+                    }
+                }
 
-                BlockingQueue<Message> gameThreadQueue = new LinkedBlockingQueue<>();
+                // Create a pvp game.
+                GameThread gameThread = GameThread.buildPVPFromSockets(
+                    request.getRequestingClient(),
+                    gameRequest.getRequestingClient(),
+                    request.getBoardSize()
+                );
 
-                MessageSubscribeRequest subscribeToPlayer1 = new MessageSubscribeRequest(gameThreadQueue);
-                MessageSubscribeRequest subscribeToPlayer2 = new MessageSubscribeRequest(gameThreadQueue);
-
-                player1Queue.put(subscribeToPlayer1);
-                player1Queue.take();
-                player2Queue.put(subscribeToPlayer2);
-                player2Queue.take();
-
-                GameThread gameThread = new GameThread(gameThreadQueue, player1Queue, player2Queue);
+                // run the game thread.
                 Thread thread = new Thread(gameThread);
                 thread.start();
-
-                // TODO create a game with the two players.
-                // System.out.println();
-
-                return;
             }
         }
 
+        // If none of the requests in the wait list matched, add this request to the wait list.
         waitList.add(gameRequest);
         System.out.println("Added to wait list.");
     }

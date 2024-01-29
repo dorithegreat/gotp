@@ -1,51 +1,30 @@
 package com.gotp.server.messages.game_thread_messages;
 
 import java.io.Serializable;
-import java.net.Socket;
 
 import com.gotp.game_mechanics.board.move.Move;
 import com.gotp.server.messages.Message;
-import com.gotp.server.messages.MessageWithSocket;
 import com.gotp.server.messages.enums.MessageFunction;
 import com.gotp.server.messages.enums.MessageTarget;
 import com.gotp.server.messages.enums.MessageType;
 
 
-public class MessageMoveFromClient implements Message, MessageWithSocket, Serializable {
+public class MessageMoveFromClient implements Message, Serializable {
 
-    /** Client's socket. */
-    private final Socket clientSocket;
+    /** Client's authentication key. */
+    private int authenticationKey;
 
     /** Move to send. */
     private final Move move;
 
     /**
      * Constructor.
-     * @param clientSocket
+     * @param authenticationKey
      * @param move
      */
-    public MessageMoveFromClient(final Socket clientSocket, final Move move) {
-        this.clientSocket = clientSocket;
+    public MessageMoveFromClient(final int authenticationKey, final Move move) {
+        this.authenticationKey = authenticationKey;
         this.move = move;
-    }
-
-    /**
-     * Get Socket.
-     * @return Socket
-     */
-    @Override
-    public Socket getClientSocket() {
-        return this.clientSocket;
-    }
-
-    /**
-     * Add Socket.
-     * @param clientSocket
-     * @return Message
-     */
-    @Override
-    public Message addClientSocket(final Socket clientSocket) {
-        return new MessageMoveFromClient(clientSocket, this.move);
     }
 
     /**
@@ -82,5 +61,13 @@ public class MessageMoveFromClient implements Message, MessageWithSocket, Serial
      */
     public Move getMove() {
         return this.move;
+    }
+
+    /**
+     * Get Authentication Key.
+     * @return int
+     */
+    public int getAuthenticationKey() {
+        return this.authenticationKey;
     }
 }
