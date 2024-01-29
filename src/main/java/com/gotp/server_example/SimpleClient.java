@@ -30,7 +30,6 @@ public final class SimpleClient {
             System.out.println("Connected to server.");
 
             // Create an object to send to the server
-            SimpleMessage myObject = new SimpleMessage("Hello from client!");
             final Vector field = new Vector(6, 9);
             Move move = new MovePlace(field, PieceType.BLACK);
 

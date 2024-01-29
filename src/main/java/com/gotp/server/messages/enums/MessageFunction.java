@@ -1,4 +1,4 @@
-package com.gotp.server.messages;
+package com.gotp.server.messages.enums;
 
 public enum MessageFunction {
 
