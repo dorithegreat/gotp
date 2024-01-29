@@ -4,6 +4,7 @@ import java.io.Serializable;
 import java.net.Socket;
 
 import com.gotp.server.messages.Message;
+import com.gotp.server.messages.MessageWithSocket;
 import com.gotp.server.messages.enums.MessageFunction;
 import com.gotp.server.messages.enums.MessageTarget;
 import com.gotp.server.messages.enums.MessageType;
@@ -11,7 +12,7 @@ import com.gotp.server.messages.enums.MessageType;
 /**
  * Request a PVP game from the server thread.
  */
-public class MessageGameRequestPVP implements Message, Serializable {
+public class MessageGameRequestPVP implements Message, Serializable, MessageWithSocket {
     /** Size of the requested game. */
     private final int boardSize;
 
@@ -82,5 +83,23 @@ public class MessageGameRequestPVP implements Message, Serializable {
      */
     public Socket getRequestingClient() {
         return requestingClient;
+    }
+
+    /**
+     * Get socket.
+     * @return Socket
+     */
+    @Override
+    public Socket getClientSocket() {
+        return this.requestingClient;
+    }
+
+    /**
+     * Add socket to the message.
+     * @return Message
+     */
+    @Override
+    public Message addClientSocket(final Socket socket) {
+        return new MessageGameRequestPVP(socket, this.boardSize);
     }
 }
