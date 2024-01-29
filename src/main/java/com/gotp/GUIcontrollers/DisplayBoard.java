@@ -4,6 +4,8 @@ import com.gotp.game_mechanics.board.PieceType;
 import com.gotp.game_mechanics.utilities.Vector;
 import com.gotp.server.BoardCommunicator;
 
+import java.io.IOException;
+
 import javafx.scene.layout.GridPane;
 
 public class DisplayBoard extends GridPane{
@@ -49,7 +51,12 @@ public class DisplayBoard extends GridPane{
         return pieces[coords.getX()][coords.getY()].getCurrentColor();
     }
 
-    public boolean check(Vector coordinates){
+    public boolean check(Vector coordinates) throws IOException, ClassNotFoundException {
         return communicator.checkValidity(coordinates);
+    }
+
+    //delegates move to a specific stone that needs to change its color
+    public void makeMove(Vector coords, PieceType color){
+        pieces[coords.getX()][coords.getY()].makeMove(color);
     }
 }

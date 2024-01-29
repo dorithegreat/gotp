@@ -1,16 +1,20 @@
 package com.gotp.server;
 
+import java.io.IOException;
+
 import com.gotp.GUIcontrollers.BoardController;
 import com.gotp.GUIcontrollers.DisplayBoard;
 import com.gotp.game_mechanics.board.GameState;
 import com.gotp.game_mechanics.board.MoveValidity;
 import com.gotp.game_mechanics.board.PieceType;
+import com.gotp.game_mechanics.board.move.Move;
 import com.gotp.game_mechanics.board.move.MovePlace;
 import com.gotp.game_mechanics.utilities.Vector;
 
 /**
  * acts as a bridge between the client and the GUI part of the board
  * also validates moves passing through it
+ * ! this class is a singleton
  */
 public final class BoardCommunicator {
     /**
@@ -25,6 +29,7 @@ public final class BoardCommunicator {
 
     /**
      * the board controller responsible for the visual representation of the game.
+     * this connection is not currently used but always could be
      */
     private BoardController boardController;
 
@@ -63,28 +68,30 @@ public final class BoardCommunicator {
      * relays a message from the board to the client, to be sent to the server.
      * @param message type of message to be sent
      */
-    public void send(String message){
-        // ! this will be massively overhauled
-        client.sendToServer(message);
-    }
+    public void send(String message) throws IOException, ClassNotFoundException{
+        switch (message) {
+            case "pass":
+                client.sendPass();
+                break;
 
-    /**
-     * sends a message to the board controller to update the state of one of the pieces.
-     * @param vector coordinates of the piece
-     * @param color color that the piece should be set to
-     */
-    public void updatePiece(Vector vector, PieceType color){
-        // TODO implement this
+            case "resign":
+                client.sendResign();
+                break;
+
+            default:
+                break;
+        }
+        client.sendToServer(message);
     }
 
     public void updatePoints(){
         // TODO implement
     }
 
-    public boolean checkValidity(Vector coords){
+    public boolean checkValidity(Vector coords) throws IOException, ClassNotFoundException{
         MoveValidity validity = state.makeMove(new MovePlace(coords, player));
         if (validity == MoveValidity.LEGAL) {
-            send("valid move");
+            client.sendMove(new MovePlace(coords, player));
             return true;
         }
         else{
@@ -92,6 +99,19 @@ public final class BoardCommunicator {
             return false;
         }
 
+    }
+
+    public void makeMove(Move move, PieceType color){
+        if (state.makeMove(move) == MoveValidity.LEGAL) {
+            //the Move interface doesn't provide an easy way to differentiate between the types so instanceof it is
+            if (move instanceof MovePlace) {
+                board.makeMove(((MovePlace)move).getField(), color);
+            }
+            //else process pass or resign
+        }
+        else {
+            System.out.println("Server sent an illegal move");
+        }
     }
 
 
