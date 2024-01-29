@@ -1,5 +1,8 @@
 package com.gotp.GUIcontrollers;
 
+import com.gotp.game_mechanics.board.PieceType;
+import com.gotp.game_mechanics.utilities.Vector;
+
 import javafx.event.EventHandler;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.StackPane;
@@ -16,17 +19,24 @@ public class BoardPiece extends StackPane {
     }
 
     /**
+     * the board that this piece is part of.
+     */
+    private DisplayBoard board;
+
+    /**
      * this is a temporary solution for alternating colors.
      * in the finished project this information will be coming from the server
      * and this field will be obsolete
      */
-    private static State nextTurn = State.BLACK;
+    private static PieceType player = PieceType.BLACK;
 
     /**
      * current state of the piece.
      * Should ideally only be changed at most once
      */
-    private State currentState = State.EMPTY;
+    private PieceType currentState = PieceType.EMPTY;
+
+    private Vector coordinates;
 
     /**
      * Constructor.
@@ -34,25 +44,51 @@ public class BoardPiece extends StackPane {
      */
     public BoardPiece() {
         super();
+
+        //sets the background of every tile to a nice light blue
+        setStyle("-fx-background-color: #abcdef");
+
+        //creates a circle (player's stone) and hides it by default
+        //this circle is the only content of this stack pane, but it can be expanded in the future
         Circle circle = new Circle(20);
         circle.setVisible(false);
         getChildren().add(circle);
+
+        //adds handler to the circle that manages it's behavior when clicked
         setOnMouseClicked(new EventHandler<MouseEvent>() {
             @Override
             public void handle(final MouseEvent e) {
-                if (currentState == State.EMPTY) { //cannot put piece on a taken spot
-                    if (nextTurn == State.WHITE) {
+                if (board.check(coordinates)) {
+                    if (player == PieceType.WHITE) {
                         circle.setFill(Color.WHITE);
-                        currentState = State.WHITE;
-                        nextTurn = State.BLACK;
-                    } else {
+                        currentState = PieceType.WHITE;
+                    }
+                    else if(player == PieceType.BLACK) {
                         circle.setFill(Color.BLACK);
-                        currentState = State.BLACK;
-                        nextTurn = State.WHITE;
+                        currentState = PieceType.BLACK;
                     }
                     circle.setVisible(true);
                 }
             }
         });
+    }
+
+    /**
+     * setter for board.
+     */
+    public void linkToBoard(DisplayBoard board){
+        this.board = board;
+    }
+
+    public PieceType getCurrentColor(){
+        return currentState;
+    }
+
+    public void setColor(PieceType color){
+        currentState = color;
+    }
+
+    public void setCoordinates(Vector vector){
+        coordinates = vector;
     }
 }

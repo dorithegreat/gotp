@@ -7,7 +7,9 @@ import javafx.fxml.Initializable;
 import javafx.scene.Node;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
+import javafx.scene.control.RadioButton;
 import javafx.scene.control.Slider;
+import javafx.scene.control.ToggleGroup;
 import javafx.stage.Stage;
 
 import java.net.URL;
@@ -24,21 +26,39 @@ public class TestSceneController implements Initializable {
      */
     @FXML
     private Slider selectorSlider;
+
+    /**
+     * chooses to play against a bot.
+     */
+    @FXML
+    private RadioButton bot;
+
+    /**
+     * toggle group to make playing against a player or a bot mutually exclusive
+     */
+    @FXML
+    private ToggleGroup mode;
+
+    /**
+     * chooses to play against another player.
+     */
+    @FXML
+    private RadioButton otherPlayer;
+
     /**
      * default size of the board in case the size is somehow not selected.
      */
-    private final int DEFAULT_SIZE = 9;
+    private static final int DEFAULT_SIZE = 7;
 
     /**
      * size of the board that will be created.
      */
     private int size = DEFAULT_SIZE;
 
-    /**
-     * controller of the next scene.
-     * Is needed so that the size of the board can be set from the current controller
-     */
-    private BoardController boardController = new BoardController();
+
+    //----------------------------------------------------------------------------------
+    //                  methods and handlers
+    //----------------------------------------------------------------------------------
 
     /**
      * adds a change listener to the selectorSlider when this object is created.
@@ -55,6 +75,11 @@ public class TestSceneController implements Initializable {
     }
 
 
+    @FXML
+    void chooseMode(ActionEvent event) {
+
+    }
+
     /**
      * Handler for the start button, goes to the board screen and starts the game.
      * @param event
@@ -67,16 +92,26 @@ public class TestSceneController implements Initializable {
         Stage stage;
         Scene scene;
 
-        //size = (int) selectorSlider.getValue();
-        //System.out.println(selectorSlider.getValue());
-        //size = 19;
-
+        //gets the controller for the next scene ahead of time so that it can call a few methods on it
         FXMLLoader boardLoader = new FXMLLoader(getClass().getResource("board.fxml"));
         root = boardLoader.load();
         BoardController boardController = boardLoader.getController();
 
         //calls method in the other controller to create a board of certain size
-        boardController.addToGrid(size);
+        boardController.setSize(size);
+        boardController.createBoard();
+
+        if (bot.isSelected() == true) {
+            boardController.requestMode("bot");
+        }
+        else if (otherPlayer.isSelected() == true) {
+            boardController.requestMode("player");
+        }
+        else{
+            //should never happen
+            System.out.println("an error has occured");
+            return;
+        }
 
         //code that changes the scene
         stage = (Stage) ((Node) event.getSource()).getScene().getWindow();

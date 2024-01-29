@@ -2,23 +2,26 @@ package com.gotp.GUIcontrollers;
 
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
-import javafx.scene.layout.GridPane;
+import javafx.scene.layout.BorderPane;
 import javafx.scene.control.Button;
 import javafx.event.ActionEvent;
-import javafx.scene.Node;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.stage.Stage;
 
 import java.io.IOException;
 
+import com.gotp.server.BoardCommunicator;
+
+//javafx controller for board.fxml
 public class BoardController {
 
     /**
-     * grid that will become the board.
+     * left side of the scene, that will host the grid part of the board.
      */
     @FXML
-    private GridPane grid;
+    private BorderPane leftSide;
+
 
     /**
      * button for passing the turn.
@@ -32,39 +35,39 @@ public class BoardController {
     @FXML
     private Button resignButton;
 
+    /**
+     * the client app controlling this board.
+     */
+    private BoardCommunicator communicator = BoardCommunicator.getInstance();
+
+    private DisplayBoard board;
 
     /**
-     * generates the board.
-     * @param boardSize size of the created board
+     * size of the board (nxn)
      */
-    @FXML
-    public void addToGrid(final int boardSize) throws IOException {
-        for (int i = 0; i < boardSize; i++) {
-            for (int j = 0; j < boardSize; j++) {
-                grid.add(new BoardPiece(), i, j);
-                //! rows that are added beyond the initial ones are scaled differently
-                //I'll fix that when I figure out what's causing it
-            }
-        }
-    }
+    private int size;
+
+
 
     /**
      * function for passing the turn.
-     * * currently always switches to the winning screen. This is obviously just for testing.
      * @param event the event that triggered this method
      */
      @FXML
     void pass(final ActionEvent event) {
-
+        communicator.send("pass");
     }
 
     /**
      * function for resigning the game.
-     * * currently always switches to the losing screen. Same as above.
      * @param event the event that triggered this method
      */
     @FXML
-    void resign(final ActionEvent event) throws IOException {
+    void resign(final ActionEvent event) {
+        communicator.send("resign");
+    }
+
+    public void swtichToEndScreen(/*indicator if the game is won or lost */) throws IOException {
         //a few declarations that will be necessary for changing the scene
         Parent root;
         Stage stage;
@@ -77,10 +80,26 @@ public class BoardController {
         //TODO do whatever is necessery with the end screen here
 
         //code that changes the scene
-        stage = (Stage) ((Node) event.getSource()).getScene().getWindow();
+
+        //a workaround, gets stage for the grid, which is also the stage this controller is for
+        stage = (Stage) leftSide.getScene().getWindow();
         scene = new Scene(root);
         stage.setScene(scene);
         stage.show();
     }
 
+    public void createBoard(){
+        board = new DisplayBoard(size);
+        leftSide.setCenter(board);
+
+        communicator.setBoardContrller(this, size);
+    }
+
+    public void requestMode(String mode) {
+        communicator.send(mode);
+    }
+
+    public void setSize(int n){
+        size = n;
+    }
 }
