@@ -18,6 +18,7 @@ import com.gotp.server.messages.enums.MessageTarget;
 import com.gotp.server.messages.enums.MessageType;
 import com.gotp.server.messages.game_thread_messages.MessageGameStarted;
 import com.gotp.server.messages.game_thread_messages.MessageMoveFromClient;
+import com.gotp.server.messages.game_thread_messages.MessageMoveFromServer;
 import com.gotp.server.messages.subscription_messages.MessageSubscribeRequest;
 
 /**
@@ -192,7 +193,18 @@ public class GameThread implements Runnable {
 
         if (moveValidity.isLegal()) {
             System.out.println(gameState);
-            // TODO: send the move to the other player.
+            MessageMoveFromServer moveMessage = new MessageMoveFromServer(move);
+            try {
+                if (player == Player.PLAYER1) {
+                    player2.put(moveMessage);
+                } else {
+                    player1.put(moveMessage);
+                }
+            } catch (InterruptedException e) {
+                System.out.println("[GameThread::handleMoveFromClient] Interrupted while sending move to client!");
+                e.printStackTrace();
+            }
+
         } else {
             System.out.println("GameThread: Player tried to make an invalid move: " + moveValidity.getMessage());
         }

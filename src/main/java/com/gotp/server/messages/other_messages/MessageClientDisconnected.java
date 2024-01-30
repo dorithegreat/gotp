@@ -8,7 +8,6 @@ import com.gotp.server.messages.MessageWithSocket;
 import com.gotp.server.messages.enums.MessageFunction;
 import com.gotp.server.messages.enums.MessageTarget;
 import com.gotp.server.messages.enums.MessageType;
-import com.gotp.server.messages.server_thread_messages.MessageGameRequestPVP;
 
 public class MessageClientDisconnected implements Message, Serializable, MessageWithSocket {
     /**

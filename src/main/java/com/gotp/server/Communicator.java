@@ -5,6 +5,7 @@ import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.net.Socket;
+import java.net.SocketException;
 
 import com.gotp.server.messages.Message;
 import com.gotp.server.messages.other_messages.MessageClientDisconnected;
@@ -53,7 +54,7 @@ public class Communicator {
             }
             return (Message) objectInput.readObject();
 
-        } catch (EOFException e) {
+        } catch (EOFException | SocketException e) {
             System.out.println("[Communicator] Client disconnected (java.io.EOFException)");
             return new MessageClientDisconnected();
         }
@@ -67,6 +68,20 @@ public class Communicator {
         socket.close();
         objectInput.close();
         objectOutput.close();
+    }
+
+    /**
+     * Check if there are any messages available.
+     * @return int
+     */
+    public int available() {
+        try {
+            return objectInput.available();
+        } catch (IOException e) {
+            System.out.println("[Communicator::available] IOException");
+            e.printStackTrace();
+            return 0;
+        }
     }
 
     /**
