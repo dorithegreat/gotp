@@ -14,9 +14,12 @@ import com.gotp.game_mechanics.board.PieceType;
 import com.gotp.game_mechanics.board.move.Move;
 import com.gotp.game_mechanics.board.move.MovePass;
 import com.gotp.server.messages.Message;
+import com.gotp.server.messages.database_messages.MessageDatabaseRequest;
+import com.gotp.server.messages.database_messages.MessageDatabaseResponse;
 import com.gotp.server.messages.enums.MessageFunction;
 import com.gotp.server.messages.enums.MessageTarget;
 import com.gotp.server.messages.enums.MessageType;
+import com.gotp.server.messages.game_thread_messages.MessageGameOver;
 import com.gotp.server.messages.game_thread_messages.MessageGameStarted;
 import com.gotp.server.messages.game_thread_messages.MessageMoveFromClient;
 import com.gotp.server.messages.game_thread_messages.MessageMoveFromServer;
@@ -110,6 +113,12 @@ public final class Client extends Application {
             else if (response.getType() == MessageType.MOVE_FROM_SERVER) {
                 processIncomingMove(response);
             }
+            else if (response.getType() == MessageType.DATABASE_RESPONSE) {
+                startReplay(response);
+            }
+            else if (response.getType() == MessageType.GAME_OVER) {
+                board.endGame((MessageGameOver) response);
+            }
     }
 
     /**
@@ -129,6 +138,12 @@ public final class Client extends Application {
     public void processIncomingMove(Message response) throws IOException{
         MessageMoveFromServer moveMessage = (MessageMoveFromServer) response;
         board.makeMove(moveMessage.getMove());
+    }
+
+    public void startReplay(Message response) throws IOException, InterruptedException {
+        MessageDatabaseResponse dataMessage = (MessageDatabaseResponse) response;
+        DatabaseProcessor databaseProcessor = new DatabaseProcessor(dataMessage.getGameHistory());
+        databaseProcessor.startReplay();
     }
     /**
      * communicates player's last move to the server
@@ -154,8 +169,9 @@ public final class Client extends Application {
         
     }
 
-    public void requestDatabase(){
-        //send an appropriate message
+    public void requestDatabase() throws IOException, InterruptedException{
+        serverQueue.put(new MessageDatabaseRequest());
+        checkInbox();
         //get a response and call method in BoardCommunicator
         //DatabaseProcessor databaseProcessor = new DatabaseProcessor(response.gethistory);
         //databaseProcessor.startReplay

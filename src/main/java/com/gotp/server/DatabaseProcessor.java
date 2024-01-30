@@ -15,9 +15,10 @@ public class DatabaseProcessor {
         this.history = history;
     }
 
-    public void startReplay() throws IOException{
+    public void startReplay() throws IOException, InterruptedException{
         for (Move move : history) {
             board.makeMove(move);
+            wait(1000);
         }
     }
 }

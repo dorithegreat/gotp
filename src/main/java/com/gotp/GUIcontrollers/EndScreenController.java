@@ -1,10 +1,15 @@
 package com.gotp.GUIcontrollers;
 
+import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.scene.control.Button;
 import javafx.scene.text.Text;
 
 public class EndScreenController {
+
+    public enum Result {
+        WON, LOST
+    }
 
     /**
      * text displaying whether the player won or lost the game.
@@ -23,8 +28,18 @@ public class EndScreenController {
      * ? should probably replace the parameter with an enum
      * @param message
      */
-    public void setMessage(final String message) {
-        this.message.setText(message);
+    public void setMessage(Result result) {
+        if (result == Result.LOST) {
+            message.setText("YOU LOST");
+        }
+        else if (result == Result.WON) {
+            message.setText("YOU WON");
+        }
+    }
+
+    @FXML
+    void startReplay(ActionEvent event) {
+
     }
 
 }

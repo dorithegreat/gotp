@@ -69,7 +69,7 @@ public class BoardController {
         communicator.send("resign");
     }
 
-    public void swtichToEndScreen(/*indicator if the game is won or lost */) throws IOException {
+    public void swtichToEndScreen(EndScreenController.Result result) throws IOException {
         //a few declarations that will be necessary for changing the scene
         Parent root;
         Stage stage;
