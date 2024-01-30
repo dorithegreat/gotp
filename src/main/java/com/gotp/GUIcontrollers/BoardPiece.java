@@ -12,25 +12,11 @@ import javafx.scene.paint.Color;
 import javafx.scene.shape.Circle;
 
 public class BoardPiece extends StackPane {
-    /**
-     * enum containing all valid state of a board piece.
-     * (either white, black or not yet assigned)
-     */
-    public enum State {
-        WHITE, BLACK, EMPTY
-    }
 
     /**
      * the board that this piece is part of.
      */
     private DisplayBoard board;
-
-    /**
-     * this is a temporary solution for alternating colors.
-     * in the finished project this information will be coming from the server
-     * and this field will be obsolete
-     */
-    private static PieceType player = PieceType.BLACK;
 
     /**
      * current state of the piece.
@@ -62,10 +48,21 @@ public class BoardPiece extends StackPane {
         setOnMouseClicked(new EventHandler<MouseEvent>() {
             @Override
             public void handle(final MouseEvent e) {
-                try {
-                    board.check(coordinates);
-                } catch (Exception ex) {
-                    ex.printStackTrace();
+                System.out.println("clicked " + coordinates.getX() + " " + coordinates.getY());
+                if (currentState == PieceType.EMPTY) {
+                    if (board.getPlayer() == PieceType.BLACK) {
+                        circle.setFill(Color.BLACK);
+                    }
+                    else if (board.getPlayer() == PieceType.WHITE) {
+                        circle.setFill(Color.WHITE);
+                    }
+                    circle.setVisible(true);
+
+                    try {
+                        board.check(coordinates);
+                    } catch (Exception ex) {
+                        ex.printStackTrace();
+                    }
                 }
             }
         });
@@ -85,6 +82,7 @@ public class BoardPiece extends StackPane {
         else {
             circle.setVisible(false);
         }
+        //System.out.println("changed color");
     }
 
     /**

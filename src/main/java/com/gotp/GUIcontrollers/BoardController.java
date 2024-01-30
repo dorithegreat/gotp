@@ -56,7 +56,7 @@ public class BoardController {
      * @param event the event that triggered this method
      */
      @FXML
-    void pass(final ActionEvent event) throws IOException, ClassNotFoundException {
+    void pass(final ActionEvent event) throws InterruptedException, IOException {
         communicator.send("pass");
     }
 
@@ -65,7 +65,7 @@ public class BoardController {
      * @param event the event that triggered this method
      */
     @FXML
-    void resign(final ActionEvent event) throws IOException, ClassNotFoundException {
+    void resign(final ActionEvent event) throws InterruptedException, IOException {
         communicator.send("resign");
     }
 
@@ -99,7 +99,7 @@ public class BoardController {
     }
 
     //works because it's called right after the size is set
-    public void requestMode(String mode) throws InterruptedException{
+    public void requestMode(String mode) throws InterruptedException, IOException {
         communicator.sendGameRequest(mode, size);
     }
 

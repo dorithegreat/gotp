@@ -12,6 +12,7 @@ import javafx.scene.Scene;
 
 import com.gotp.game_mechanics.board.PieceType;
 import com.gotp.game_mechanics.board.move.Move;
+import com.gotp.game_mechanics.board.move.MovePass;
 import com.gotp.server.messages.Message;
 import com.gotp.server.messages.enums.MessageFunction;
 import com.gotp.server.messages.enums.MessageTarget;
@@ -43,7 +44,7 @@ public final class Client extends Application {
     private int authenticationKey;
 
     private BlockingQueue<Message> serverQueue;
-    private BlockingQueue<Message> receivedQueue;
+    public BlockingQueue<Message> receivedQueue;
 
 
     // * Filip put this here "to calm down pmd" and I'm not sure what for but I have no reason to delete it
@@ -53,22 +54,22 @@ public final class Client extends Application {
     /**
      * Main method.
      */
-    public void start(Stage stage) throws IOException {
+    public void start(Stage stage) throws IOException, InterruptedException {
 
         Scene scene = new Scene(loadFXML("testScene"));
         stage.setScene(scene);
         stage.show();
 
+        //links to the BoardCommunicator which handles the GUI
         board = BoardCommunicator.getInstance();
         board.setClient(this);
-        board.setPlayer(PieceType.BLACK);
         
+        //creates a separate thread that automatically communicates with the servers
         serverQueue = new LinkedBlockingDeque<>();
         receivedQueue = new LinkedBlockingDeque<>();
         ClientThread clientThread = new ClientThread(serverQueue, receivedQueue);
-        //ReceiverThread receiverThread = new ReceiverThread(receivedQueue);
         new Thread(clientThread).start();
-        //new Thread(receiverThread).start();
+
     }
 
     /**
@@ -99,96 +100,65 @@ public final class Client extends Application {
     //------------------------------------------------------
 
     /**
+     * 
+     */
+    public void checkInbox() throws InterruptedException, IOException{
+            Message response = receivedQueue.take();
+            if (response.getType() == MessageType.GAME_STARTED) {
+                startGame(response);
+            }
+            else if (response.getType() == MessageType.MOVE_FROM_SERVER) {
+                processIncomingMove(response);
+            }
+    }
+
+    /**
+     * initializes the game once the server connects this client with an opponent
+     */
+    public void startGame(Message response) throws IOException, InterruptedException{
+        System.out.println("game started");
+
+        MessageGameStarted gameStarted = (MessageGameStarted) response;
+        authenticationKey = gameStarted.getAuthenticationKey();
+        board.setPlayer(gameStarted.getPlayerPieceType());
+        if (gameStarted.getPlayerPieceType() == PieceType.WHITE) {
+            checkInbox();
+        }
+    }
+
+    public void processIncomingMove(Message response) throws IOException{
+        MessageMoveFromServer moveMessage = (MessageMoveFromServer) response;
+        board.makeMove(moveMessage.getMove());
+    }
+    /**
      * communicates player's last move to the server
      * it has already been checked if it's legal
      * if it's returned as invalid something went deeply wrong
      */
     public void sendMove(Move move) throws InterruptedException {
         serverQueue.put(new MessageMoveFromClient(authenticationKey, move));
-
-        //check server's response here
-        //currently the server doesn't send any response in return so there's nothing to test
-
-        // Message response = receivedQueue.take();
-        // // *needs to be changed to MOVE_FROM_SERVER but that type of message doesn't yet exist
-        // if (response.getFunction() == MessageFunction.DATA_MESSAGE && response.getType() == MessageType.MOVE_FROM_CLIENT) {
-        //     Move serverMove = ((MessageMoveFromServer) response).getMove();   
-        // }
     }
 
-    /**
-     * sends a message to the server that the user wants to pass
-     */
-    public void sendPass() throws IOException, ClassNotFoundException{
-        //server.send(/*pass message */);
-        //Message response = server.receive();
-        //process the response
-    }
 
-    /**
-     * sends a message that the user wants to immediately lose the game and disconnect
-     */
-    public void sendResign() throws IOException, ClassNotFoundException{
-        //serverQueue.put();
-        //Message response = server.receive();
-        //process the response
-    }
-
-    public void requestGameMode(GameType mode, int size) throws InterruptedException{
+    public void requestGameMode(GameType mode, int size) throws InterruptedException, IOException{
         switch (mode) {
             case PVP:
                 serverQueue.put(new MessageGameRequestPVP(size));
+                checkInbox();
                 break;
             case BOT:
                 
             default:
                 break;
         }
-        Message response = receivedQueue.take();
-        //System.out.println("response received");
-
-        // ? the massive amount of comments is because I'm fairly sure the server doesn't send GAME_REQUEST_SUCCESS
-        // ? but I'm not sure if that's how it will be in the end so I'm leaving the code here just in case
-
-        // if (response.getFunction() == MessageFunction.RESPONSE && response.getType() == MessageType.GAME_REQUEST_SUCCESS) {
-        //     System.out.println("game request approved");
-        //     response = receivedQueue.take();
-            if (response.getType() == MessageType.GAME_STARTED) {
-                System.out.println("game started");
-                //ugly but will stay for now
-
-                MessageGameStarted gameStarted = (MessageGameStarted) response;
-                authenticationKey = gameStarted.getAuthenticationKey();
-                board.setPlayer(gameStarted.getPlayerPieceType());
-                if (gameStarted.getPlayerPieceType() == PieceType.WHITE) {
-                    processIncomingMove();
-                }
-            }
-            //server registered game request as valid but returned something else than Game Started
-           // System.out.println("Game could not be started");
-        // }
-        // else{
-        //     System.out.println("game request denied");
-        //     return;
-        // }
         
     }
 
     public void requestDatabase(){
         //send an appropriate message
         //get a response and call method in BoardCommunicator
+        //DatabaseProcessor databaseProcessor = new DatabaseProcessor(response.gethistory);
+        //databaseProcessor.startReplay
     }
 
-    public void processIncomingMove() throws InterruptedException{
-        Message response = receivedQueue.take();
-        System.out.println("received a response");
-        
-        //check if it's game ended message
-
-        // * should be move from server but this is how it is on the server
-        if (response.getType() == MessageType.MOVE_FROM_CLIENT) {
-            MessageMoveFromServer moveMessage = (MessageMoveFromServer) response;
-            board.makeMove(moveMessage.getMove());
-        }
-    }
 }

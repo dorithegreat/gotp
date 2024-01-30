@@ -4,13 +4,20 @@ import java.io.IOException;
 
 import com.gotp.GUIcontrollers.BoardController;
 import com.gotp.GUIcontrollers.DisplayBoard;
+import com.gotp.game_mechanics.board.Board;
 import com.gotp.game_mechanics.board.GameState;
 import com.gotp.game_mechanics.board.MoveValidity;
 import com.gotp.game_mechanics.board.PieceType;
 import com.gotp.game_mechanics.board.move.Move;
+import com.gotp.game_mechanics.board.move.MoveGiveUp;
+import com.gotp.game_mechanics.board.move.MovePass;
 import com.gotp.game_mechanics.board.move.MovePlace;
 import com.gotp.game_mechanics.utilities.Vector;
 import com.gotp.server.Client.GameType;
+import com.gotp.server.messages.game_thread_messages.MessageMoveFromServer;
+
+import javafx.application.Platform;
+import javafx.concurrent.Task;
 
 /**
  * acts as a bridge between the client and the GUI part of the board
@@ -73,14 +80,24 @@ public final class BoardCommunicator {
      * relays a message from the board to the client, to be sent to the server.
      * @param message type of message to be sent
      */
-    public void send(String message) throws IOException, ClassNotFoundException{
+    public void send(String message) throws InterruptedException, IOException {
         switch (message) {
             case "pass":
-                client.sendPass();
+                if (state.makeMove(new MovePass(player)) == MoveValidity.LEGAL) {
+                    client.sendMove(new MovePass(player));
+                }
+                else {
+                    System.out.println("you can't pass right now");
+                }
                 break;
 
             case "resign":
-                client.sendResign();
+                if (state.makeMove(new MoveGiveUp(player)) == MoveValidity.LEGAL) {
+                    client.sendMove(new MoveGiveUp(player));   
+                }
+                else {
+                    System.out.println("you can't give up");
+                }
                 break;
 
             default:
@@ -88,7 +105,7 @@ public final class BoardCommunicator {
         }
     }
 
-    public void sendGameRequest(String mode, int n) throws InterruptedException {
+    public void sendGameRequest(String mode, int n) throws InterruptedException, IOException {
         if ("player".equals(mode)) {
             client.requestGameMode(GameType.PVP, n);
         }
@@ -104,31 +121,51 @@ public final class BoardCommunicator {
         // TODO implement
     }
 
-    public void checkValidity(Vector coords) throws InterruptedException{
+    public void checkValidity(Vector coords) throws InterruptedException, IOException{
         MoveValidity validity = state.makeMove(new MovePlace(coords, player));
+        System.out.println(validity);
         if (validity == MoveValidity.LEGAL) {
-            board.makeMove(coords, player);
             client.sendMove(new MovePlace(coords, player));
-            client.processIncomingMove();
+            Task<Void> task = new Task<Void>() {
+                @Override
+                public Void call() throws InterruptedException, IOException{
+                    MessageMoveFromServer response = (MessageMoveFromServer) client.receivedQueue.take();
+                    makeMove(response.getMove());
+                    return null;
+                }
+            };
+            new Thread(task).start();
         }
-        else{
-            System.out.println("invalid move " + coords.getX() + " " + coords.getY() + " " + validity);
-        }
-
+        drawBoard();
     }
 
-    public void makeMove(Move move){
+
+    public void makeMove(Move move) throws IOException {
+        //makes the move in the GameState, regardless of type
         if (state.makeMove(move) == MoveValidity.LEGAL) {
             //the Move interface doesn't provide an easy way to differentiate between the types so instanceof it is
             if (move instanceof MovePlace) {
                 MovePlace movePlace = (MovePlace) move;
                 board.makeMove(movePlace.getField(), movePlace.getPieceType());
             }
-            //else process pass or resign
+            else if (move instanceof MoveGiveUp) {
+                boardController.swtichToEndScreen();
+            }
+            //there's not much to process for MovePass
         }
         else {
             System.out.println("Server sent an illegal move");
         }
+    }
+
+    public void drawBoard(){
+        Board stateBoard = state.getBoardCopy();
+        for (int i = 0; i < stateBoard.getBoardSize(); i++) {
+            for (int j = 0; j < stateBoard.getBoardSize(); j++) {
+                board.makeMove(new Vector(i, j), stateBoard.getField(i, j));
+            }
+        }
+        
     }
 
 
@@ -175,5 +212,6 @@ public final class BoardCommunicator {
 
     public void setPlayer(PieceType color){
         player = color;
+        board.setPlayer(color);
     }
 }

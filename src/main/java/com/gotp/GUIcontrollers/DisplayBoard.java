@@ -18,6 +18,11 @@ public class DisplayBoard extends GridPane{
     private BoardPiece[][] pieces;
 
     /**
+     * color of the player using this board.
+     */
+    private PieceType player;
+
+    /**
      * communicator class for sending messages to the client
      */
     private BoardCommunicator communicator = BoardCommunicator.getInstance();
@@ -51,12 +56,21 @@ public class DisplayBoard extends GridPane{
         return pieces[coords.getX()][coords.getY()].getCurrentColor();
     }
 
-    public void check(Vector coordinates) throws InterruptedException {
+    public void check(Vector coordinates) throws InterruptedException, IOException {
         communicator.checkValidity(coordinates);
     }
 
     //delegates move to a specific stone that needs to change its color
     public void makeMove(Vector coords, PieceType color){
+        //System.out.println("chose piece");
         pieces[coords.getX()][coords.getY()].makeMove(color);
+    }
+
+    public void setPlayer(PieceType color){
+        this.player = color;
+    }
+
+    public PieceType getPlayer(){
+        return player;
     }
 }
