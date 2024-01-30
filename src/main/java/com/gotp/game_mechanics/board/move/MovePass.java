@@ -1,11 +1,13 @@
 package com.gotp.game_mechanics.board.move;
 
+import java.io.Serializable;
+
 import com.gotp.game_mechanics.board.PieceType;
 
 /**
  * Represents a pass move.
  */
-public class MovePass implements Move {
+public class MovePass implements Move, Serializable {
     /** Who passes? */
     private PieceType pieceType;
 
@@ -23,5 +25,16 @@ public class MovePass implements Move {
      */
     public PieceType getPieceType() {
         return pieceType;
+    }
+
+    /**
+     * Override toString() method.
+     * @return String
+     */
+    @Override
+    public String toString() {
+        return "MovePass{"
+                + "pieceType=" + pieceType
+                + '}';
     }
 }

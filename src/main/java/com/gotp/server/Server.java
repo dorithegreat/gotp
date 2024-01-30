@@ -63,36 +63,4 @@ public final class Server {
 
         new Thread(clientForwarder).start();
     }
-
-    // /**
-    //  * Send a message to a client.
-    //  * @param destinationSocket
-    //  * @throws IOException
-    //  */
-    // public static void threadPrintWhatYouGet(final Socket destinationSocket) {
-    //     try {
-    //         SharedResources
-    //             .getInstance()
-    //             .getClientQueue(destinationSocket)
-    //             .put(new MessageDebug("Hello another Thread!"));
-
-    //         BlockingQueue<Message> myQueue = new LinkedBlockingQueue<>();
-
-    //         MessageSubscribe subscribeRequest = new MessageSubscribe(myQueue);
-
-    //         SharedResources
-    //             .getInstance()
-    //             .getClientQueue(destinationSocket)
-    //             .put(subscribeRequest);
-
-    //         Message response = myQueue.take();
-
-    //         if (response instanceof MessageDebug) {
-    //             System.out.println("Subscribe request was: " + ((MessageDebug) response).getDebugMessage());
-    //         }
-
-    //     } catch (InterruptedException e) {
-    //         e.printStackTrace();
-    //     }
-    // }
 }

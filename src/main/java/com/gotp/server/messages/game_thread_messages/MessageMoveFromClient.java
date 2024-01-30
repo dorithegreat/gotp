@@ -12,7 +12,7 @@ import com.gotp.server.messages.enums.MessageType;
 public class MessageMoveFromClient implements Message, Serializable {
 
     /** Client's authentication key. */
-    private int authenticationKey;
+    private final int authenticationKey;
 
     /** Move to send. */
     private final Move move;

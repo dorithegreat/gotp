@@ -295,8 +295,8 @@ public class BoardTest {
         String testString = "WWWW;BWBW;WBWB;BBBB;";
         Board testBoard = new Board(testString);
 
-        System.out.println(testString);
-        System.out.println(testBoard.standardBoardString());
+        // System.out.println(testString);
+        // System.out.println(testBoard.standardBoardString());
 
         assertEquals(testString, testBoard.standardBoardString());
     }

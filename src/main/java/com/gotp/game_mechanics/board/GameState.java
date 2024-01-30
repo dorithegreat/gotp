@@ -234,6 +234,14 @@ public class GameState {
     }
 
     /**
+     * Getter for boardSize.
+     * @return boardSize
+     */
+    public int getBoardSize() {
+        return this.board.getBoardSize();
+    }
+
+    /**
      * Getter for `board`.
      * * This can't return reference to `this.board`, cause someone could modyfy it.
      * @return Board

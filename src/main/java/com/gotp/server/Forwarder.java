@@ -13,6 +13,7 @@ import com.gotp.server.messages.MessageWithSocket;
 import com.gotp.server.messages.subscription_messages.MessageSubscribeAccept;
 import com.gotp.server.messages.subscription_messages.MessageSubscribeRequest;
 import com.gotp.server.messages.enums.MessageTarget;
+import com.gotp.server.messages.other_messages.MessageClientDisconnected;
 
 
 /**
@@ -22,6 +23,9 @@ import com.gotp.server.messages.enums.MessageTarget;
  * receive messages from the client.
  */
 public class Forwarder implements Runnable {
+
+    /** Thread will run while this variable is true. */
+    private boolean running = true;
 
     /** Socket to communicate with the client. */
     private final Socket clientSocket;
@@ -61,12 +65,16 @@ public class Forwarder implements Runnable {
             new Thread(() -> manageIncomingMessages(client, subscribers, entry)).start();
 
             // Listen for messages from the client.
-            while (true) {
+            while (running) {
                 receivedMessage = client.receive();
 
                 // If the message needs clientSocket, we need to add it.
                 if (receivedMessage instanceof MessageWithSocket) {
                     receivedMessage = ((MessageWithSocket) receivedMessage).addClientSocket(clientSocket);
+                }
+
+                if (receivedMessage instanceof MessageClientDisconnected) {
+                    running = false;
                 }
 
                 // send the message to every subscriber.
@@ -76,7 +84,7 @@ public class Forwarder implements Runnable {
             }
 
             // Close the connection when done
-            // client.close();
+            client.close();
         } catch (IOException | ClassNotFoundException | InterruptedException e) {
             e.printStackTrace();
         }
@@ -98,7 +106,8 @@ public class Forwarder implements Runnable {
             Message receivedMessage;
 
             // Listen for messages from threads.
-            while (true) {
+            boolean running = true;
+            while (running) {
                 receivedMessage = entry.take();
 
                 // Handle subcribe requests.
@@ -118,6 +127,14 @@ public class Forwarder implements Runnable {
                     } else if (debugMessage.getTarget() == MessageTarget.CLIENT) {
                         clientCommunicator.send(receivedMessage);
                     }
+
+                // Close this thread if the client disconnected.
+                } else if (receivedMessage instanceof MessageClientDisconnected) {
+                    MessageClientDisconnected disconnectedMessage = (MessageClientDisconnected) receivedMessage;
+                    boolean ourClientDisconnected = disconnectedMessage
+                        .getClientSocket()
+                        .equals(clientCommunicator.getSocket());
+                        running = !ourClientDisconnected;
 
                 // Forward rest of the messages to the client.
                 } else {

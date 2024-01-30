@@ -7,4 +7,6 @@ module com.gotp {
     opens com.gotp.server to javafx.fxml;
     exports com.gotp.server;
     exports com.gotp;
+
+    requires java.sql;
 }
