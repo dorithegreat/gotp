@@ -1,5 +1,7 @@
 package com.gotp.database;
 
+import java.util.List;
+
 import com.gotp.game_mechanics.board.GameHistory;
 
 public interface Database {
@@ -15,4 +17,16 @@ public interface Database {
      * @return GameHistory
      */
     GameHistory getGameHistory(int id);
+
+    /**
+     * Get the last game history from the database.
+     * @return GameHistory
+     */
+    GameHistory getLastGameHistory();
+
+    /**
+     * Get all Game Histories from the database.
+     * @return List<GameHistory>
+     */
+    List<GameHistory> getAllGameHistories();
 }

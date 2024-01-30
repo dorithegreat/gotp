@@ -24,7 +24,7 @@ public class GameHistory extends ArrayList<Move> {
      * @param startingTurn
      * @param startingPosition
      */
-    GameHistory(final PieceType startingTurn, final String startingPosition) {
+    public GameHistory(final PieceType startingTurn, final String startingPosition) {
         super();
         this.startingTurn = startingTurn;
         this.startingPosition = startingPosition;

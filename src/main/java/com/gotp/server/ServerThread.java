@@ -8,8 +8,10 @@ import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.function.Function;
 
+import com.gotp.game_mechanics.board.GameHistory;
 import com.gotp.server.messages.Message;
 import com.gotp.server.messages.MessageDebug;
+import com.gotp.server.messages.database_messages.MessageDatabaseResponse;
 import com.gotp.server.messages.enums.MessageTarget;
 import com.gotp.server.messages.enums.MessageType;
 import com.gotp.server.messages.server_thread_messages.MessageGameRequestPVP;
@@ -44,6 +46,8 @@ public class ServerThread implements Runnable {
 
         messageHandlers.put(MessageType.DEBUG, this::handleDebugMessage);
         messageHandlers.put(MessageType.GAME_REQUEST_PVP, this::handleGameRequestPVP);
+        messageHandlers.put(MessageType.DATABASE_REQUEST, this::handleDatabaseRequest);
+        messageHandlers.put(MessageType.CLIENT_DISCONNECTED, this::handleClientDisconnect);
     }
 
     /**
@@ -157,6 +161,23 @@ public class ServerThread implements Runnable {
 
         // If none of the requests in the wait list matched, add this request to the wait list.
         waitList.add(gameRequest);
+        return null;
+    }
+
+    /**
+     * Handle a database request.
+     * @param message
+     * @return Void
+     */
+    public Void handleDatabaseRequest(final Message message) {
+        GameHistory gameHistory = SharedResources.getInstance().getDatabase().getLastGameHistory();
+        MessageDatabaseResponse response = new MessageDatabaseResponse(gameHistory);
+        try {
+            clientQueue.put(response);
+        } catch (InterruptedException e) {
+            System.out.println("[ServerThread::handleDatabaseResponse] Interrupted while sending database response.");
+            e.printStackTrace();
+        }
         return null;
     }
 
