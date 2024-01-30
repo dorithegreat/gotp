@@ -24,6 +24,7 @@ import com.gotp.server.messages.game_thread_messages.MessageGameOver;
 import com.gotp.server.messages.game_thread_messages.MessageGameStarted;
 import com.gotp.server.messages.game_thread_messages.MessageMoveFromClient;
 import com.gotp.server.messages.game_thread_messages.MessageMoveFromServer;
+import com.gotp.server.messages.server_thread_messages.MessageGameRequestBot;
 import com.gotp.server.messages.server_thread_messages.MessageGameRequestPVP;
 
 /**
@@ -63,7 +64,7 @@ public final class ClientMock {
 
         try (Socket socket = new Socket(serverAddress, serverPort)) {
             System.out.println("Connected to server.");
-            server = new Communicator(socket);
+            server = new ClientSideCommunicator(socket);
 
             String input;
 
@@ -107,6 +108,7 @@ public final class ClientMock {
      */
     private static void initializeComands() {
         commands.put("pvp", ClientMock::commandPVP);
+        commands.put("bot", ClientMock::commandBot);
         commands.put("debug", ClientMock::commandDebug);
         commands.put("read", ClientMock::commandRead);
         commands.put("move", ClientMock::commandMove);
@@ -125,6 +127,7 @@ public final class ClientMock {
         messageHandlers.put(MessageType.MOVE_FROM_SERVER, ClientMock::handleMoveFromServer);
         messageHandlers.put(MessageType.DATABASE_RESPONSE, ClientMock::handleDatabaseResponse);
         messageHandlers.put(MessageType.GAME_OVER, ClientMock::handleGameOver);
+        messageHandlers.put(MessageType.SERVER_DISCONNECTED, ClientMock::handleServerDisconnected);
     }
 
     /**
@@ -203,6 +206,17 @@ public final class ClientMock {
         return null;
     }
 
+    /**
+     * Handle server disconnected.
+     * @param message
+     * @return Void
+     */
+    public static Void handleServerDisconnected(final Message message) {
+        System.out.println("[<-] Server disconnected!");
+        System.exit(0);
+        return null;
+    }
+
 
     private static Void commandPVP(final String[] inputTokens) {
         int localBoardSize = Integer.parseInt(inputTokens[1]);
@@ -211,6 +225,23 @@ public final class ClientMock {
             server.send(message);
         } catch (IOException e) {
             System.out.println("[ClientMock::commandPVP] Can't send message!");
+            e.printStackTrace();
+        }
+        return null;
+    }
+
+    /**
+     * Handle a bot game request.
+     * @param inputTokens
+     * @return Void
+     */
+    private static Void commandBot(final String[] inputTokens) {
+        int localBoardSize = Integer.parseInt(inputTokens[1]);
+        final MessageGameRequestBot message = new MessageGameRequestBot(localBoardSize);
+        try {
+            server.send(message);
+        } catch (IOException e) {
+            System.out.println("[ClientMock::commandBot] Can't send message!");
             e.printStackTrace();
         }
         return null;
@@ -230,6 +261,11 @@ public final class ClientMock {
         return null;
     }
 
+    /**
+     * Handle a read command.
+     * @param inputTokens
+     * @return Void
+     */
     private static Void commandRead(final String[] inputTokens) {
         Message receivedMessage;
 
@@ -272,6 +308,11 @@ public final class ClientMock {
         return null;
     }
 
+    /**
+     * Handle a database command.
+     * @param inputTokens
+     * @return Void
+     */
     private static Void commandDatabase(final String[] inputTokens) {
         final MessageDatabaseRequest message = new MessageDatabaseRequest();
         try {
@@ -283,6 +324,11 @@ public final class ClientMock {
         return null;
     }
 
+    /**
+     * Handle an exit command.
+     * @param inputTokens
+     * @return Void
+     */
     private static Void commandExit(final String[] inputTokens) {
         status = false;
         return null;
