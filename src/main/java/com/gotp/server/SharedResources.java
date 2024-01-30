@@ -48,6 +48,15 @@ public final class SharedResources {
     }
 
     /**
+     * Delete all client's requests from waitList.
+     * @param socket
+     * @return boolean
+     */
+    public boolean deleteClientFromWaitList(final Socket socket) {
+        return waitList.removeIf(request -> request.getRequestingClient().equals(socket));
+    }
+
+    /**
      * Get Entrypoint to send a message to a client
      * or subscribe to client's messages.
      * @param socket

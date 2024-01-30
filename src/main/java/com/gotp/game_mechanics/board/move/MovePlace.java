@@ -46,4 +46,16 @@ public class MovePlace implements Move, Serializable {
     public PieceType getPieceType() {
         return pieceType;
     }
+
+    /**
+     * Override toString() method.
+     * @return String
+     */
+    @Override
+    public String toString() {
+        return "MovePlace{"
+                + "field=" + field
+                + ", pieceType=" + pieceType
+                + '}';
+    }
 }

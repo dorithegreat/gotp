@@ -1,11 +1,13 @@
 package com.gotp.server;
 
+import java.io.EOFException;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.net.Socket;
 
 import com.gotp.server.messages.Message;
+import com.gotp.server.messages.other_messages.MessageClientDisconnected;
 
 public class Communicator {
     /** Socket to communicate with server. */
@@ -45,10 +47,16 @@ public class Communicator {
      * @throws ClassNotFoundException
      */
     public Message receive() throws IOException, ClassNotFoundException {
-        if (objectInput == null) {
-            return null;
+        try {
+            if (objectInput == null) {
+                return null;
+            }
+            return (Message) objectInput.readObject();
+
+        } catch (EOFException e) {
+            System.out.println("[Communicator] Client disconnected (java.io.EOFException)");
+            return new MessageClientDisconnected();
         }
-        return (Message) objectInput.readObject();
     }
 
     /**
@@ -75,5 +83,13 @@ public class Communicator {
      */
     public ObjectOutputStream getObjectOutput() {
         return objectOutput;
+    }
+
+    /**
+     * Get socket.
+     * @return Socket.
+     */
+    public Socket getSocket() {
+        return socket;
     }
 }

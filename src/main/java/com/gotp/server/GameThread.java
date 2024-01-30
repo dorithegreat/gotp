@@ -6,6 +6,7 @@ import java.util.Map;
 import java.util.Random;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
+import java.util.function.Function;
 
 import com.gotp.game_mechanics.board.GameState;
 import com.gotp.game_mechanics.board.MoveValidity;
@@ -13,6 +14,8 @@ import com.gotp.game_mechanics.board.PieceType;
 import com.gotp.game_mechanics.board.move.Move;
 import com.gotp.server.messages.Message;
 import com.gotp.server.messages.MessageDebug;
+import com.gotp.server.messages.enums.MessageTarget;
+import com.gotp.server.messages.enums.MessageType;
 import com.gotp.server.messages.game_thread_messages.MessageGameStarted;
 import com.gotp.server.messages.game_thread_messages.MessageMoveFromClient;
 import com.gotp.server.messages.subscription_messages.MessageSubscribeRequest;
@@ -51,6 +54,9 @@ public class GameThread implements Runnable {
         return new GameThread(gameThreadQueue, player1Queue, player2Queue, boardSize);
     }
 
+    /** Thread will run while this variable is true. */
+    private boolean running = true;
+
     /**
      * Queue from which thread will read.
      * ! readQueue should already be subscribed to BOTH clients, before object instatiation. !
@@ -64,7 +70,7 @@ public class GameThread implements Runnable {
     private BlockingQueue<Message> player2;
 
     /** Board size. */
-    private int boardSize;
+    // private int boardSize;
 
     private enum Player {
         /** Ther are 2 players in the game. */
@@ -76,6 +82,13 @@ public class GameThread implements Runnable {
 
     /** Which player has which color. */
     private Map<Player, PieceType> playerPieceType = new HashMap<>();
+
+    /** Game state of this GameThread. */
+    private GameState gameState;
+
+    /** Handlers for messages. */
+    private Map<MessageType, Function<Message, Void>> messageHandlers = new HashMap<>();
+
 
     /**
      * Constructor.
@@ -93,7 +106,11 @@ public class GameThread implements Runnable {
         this.readQueue = readQueue;
         this.player1 = player1;
         this.player2 = player2;
-        this.boardSize = boardSize;
+        this.gameState = new GameState(boardSize);
+
+        messageHandlers.put(MessageType.DEBUG, this::handleDebugMessage);
+        messageHandlers.put(MessageType.MOVE_FROM_CLIENT, this::handleMoveFromClient);
+        messageHandlers.put(MessageType.CLIENT_DISCONNECTED, this::handleClientDisconnect);
     }
 
     /**
@@ -106,43 +123,57 @@ public class GameThread implements Runnable {
         initializePieceTypes();
         sendGameStartedMessages();
 
-        GameState gameState = new GameState(boardSize);
+        System.out.println(gameState);
 
         try {
-            while (true) {
-                System.out.println(gameState);
-                Message message = readQueue.take();
-                System.out.println("chuj");
-                if (message instanceof MessageDebug) {
-                    MessageDebug messageDebug = (MessageDebug) message;
-                    System.out.println("[GameThread] " + messageDebug.getDebugMessage());
-                }
+            while (running) {
+                Message receivedMessage = readQueue.take();
+                MessageType messageType = receivedMessage.getType();
 
-                if (message instanceof MessageMoveFromClient) {
-                    System.out.println("GameThread: Received move from client!");
-                    handleMoveFromClient((MessageMoveFromClient) message, gameState);
+                // apply a specific handler for the message type.
+                if (this.messageHandlers.containsKey(messageType)) {
+                    this.messageHandlers
+                        .get(messageType)
+                        .apply(receivedMessage);
                 }
             }
         } catch (InterruptedException e) {
-            System.out.println("GameThread: Interrupted while reading from readQueue!");
+            System.out.println("[GameThread] Interrupted while reading from readQueue!");
             e.printStackTrace();
         }
+    }
+
+    // ------------------- Message handlers -------------------
+    /**
+     * Handle a debug message.
+     * @param message
+     * @return Void
+     */
+    private Void handleDebugMessage(final Message message) {
+        MessageDebug debugMessage = (MessageDebug) message;
+
+        if (debugMessage.getTarget() == MessageTarget.GAME_THREAD) {
+            System.out.println("[GameThread Debug] " + debugMessage.getDebugMessage());
+        }
+
+        return null;
     }
 
     /**
      * Handle move from client.
      * @param message
-     * @param gameState
+     * @return Void
      */
-    private void handleMoveFromClient(final MessageMoveFromClient message, final GameState gameState) {
+    private Void handleMoveFromClient(final Message message) {
+        MessageMoveFromClient messageMove = (MessageMoveFromClient) message;
+
+        System.out.println("[GameThread] Received move from client: " + messageMove.getMove());
+
         // check if the authentication key is valid.
-
-        System.out.println("GameThread: Received move from client: " + message.getMove());
-
-        int authenticationKey = message.getAuthenticationKey();
+        int authenticationKey = messageMove.getAuthenticationKey();
         if (!properAuthenticationKey(authenticationKey)) {
-            System.out.println("GameThread: Authentication key is not valid!");
-            return;
+            System.out.println("[GameThread] Authentication key is not valid!");
+            return null;
         }
 
         // check which player made the move.
@@ -150,10 +181,10 @@ public class GameThread implements Runnable {
         PieceType pieceType = playerPieceType.get(player);
 
         // check if this player is allowed to make a move with this color.
-        Move move = message.getMove();
+        Move move = messageMove.getMove();
         if (move.getPieceType() != pieceType) {
-            System.out.println("GameThread: Player tried to place a piece of wrong color!");
-            return;
+            System.out.println("[GameThread] Player tried to place a piece of wrong color!");
+            return null;
         }
 
         // Make a move and check if it's legal.
@@ -165,7 +196,23 @@ public class GameThread implements Runnable {
         } else {
             System.out.println("GameThread: Player tried to make an invalid move: " + moveValidity.getMessage());
         }
+
+        return null;
     }
+
+    /**
+     * Handle client disconnect.
+     * @return Void.
+     */
+    private Void handleClientDisconnect(final Message message) {
+        // TODO: either win the game for the opposing player or end the game without conclusion.
+        // TODO: send a message to the other player that the game has ended.
+        this.running = false;
+        return null;
+    }
+
+
+    // ------------------- Helper methods -------------------
 
     /**
      * Get player from authentication key.
@@ -175,8 +222,10 @@ public class GameThread implements Runnable {
     private Player getPlayerFromAuthenticationKey(final int authenticationKey) {
         if (authenticationKey == this.authenticationKey.get(Player.PLAYER1)) {
             return Player.PLAYER1;
-        } else {
+        } else if (authenticationKey == this.authenticationKey.get(Player.PLAYER2)) {
             return Player.PLAYER2;
+        } else {
+            throw new RuntimeException("[GameThread] Authentication key is not valid!");
         }
     }
 
@@ -217,15 +266,19 @@ public class GameThread implements Runnable {
         }
     }
 
+    /**
+     * Notifies both players that the game has started.
+     * Sends them the authentication key and the piece type.
+     */
     private void sendGameStartedMessages() {
         MessageGameStarted player1Message = new MessageGameStarted(
-            boardSize,
+            this.gameState.getBoardSize(),
             authenticationKey.get(Player.PLAYER1),
             playerPieceType.get(Player.PLAYER1)
         );
 
         MessageGameStarted player2Message = new MessageGameStarted(
-            boardSize,
+            this.gameState.getBoardSize(),
             authenticationKey.get(Player.PLAYER2),
             playerPieceType.get(Player.PLAYER2)
         );

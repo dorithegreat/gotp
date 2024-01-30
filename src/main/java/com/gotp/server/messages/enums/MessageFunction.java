@@ -15,5 +15,8 @@ public enum MessageFunction {
     ERROR,
 
     /** Used when confirming something. */
-    CONFIRMATION
+    CONFIRMATION,
+
+    /** When something unexpected happens. */
+    NOTIFICATION
 }

@@ -11,5 +11,8 @@ public enum MessageType {
     GAME_STARTED, MOVE_FROM_CLIENT, MOVE_FROM_SERVER,
 
     /** Debug. */
-    DEBUG
+    DEBUG,
+
+    /** Connection related types. */
+    CLIENT_DISCONNECTED,
 }
