@@ -10,6 +10,7 @@ import com.gotp.game_mechanics.board.PieceType;
 import com.gotp.game_mechanics.board.move.Move;
 import com.gotp.game_mechanics.board.move.MovePlace;
 import com.gotp.game_mechanics.utilities.Vector;
+import com.gotp.server.Client.GameType;
 
 /**
  * acts as a bridge between the client and the GUI part of the board
@@ -57,6 +58,10 @@ public final class BoardCommunicator {
 
     }
 
+    /**
+     * the singleton method for getting the only valid instance of this class
+     * @return
+     */
     public static synchronized BoardCommunicator getInstance() {
         if (instance == null) {
             instance = new BoardCommunicator();
@@ -81,31 +86,43 @@ public final class BoardCommunicator {
             default:
                 break;
         }
-        client.sendToServer(message);
+    }
+
+    public void sendGameRequest(String mode, int n) throws InterruptedException {
+        if ("player".equals(mode)) {
+            client.requestGameMode(GameType.PVP, n);
+        }
+        else if ("bot".equals(mode)) {
+            client.requestGameMode(GameType.BOT, n);
+        }
+        else {
+            System.out.println("requested a game mode that is neither PVP or bot");
+        }
     }
 
     public void updatePoints(){
         // TODO implement
     }
 
-    public boolean checkValidity(Vector coords) throws IOException, ClassNotFoundException{
+    public void checkValidity(Vector coords) throws InterruptedException{
         MoveValidity validity = state.makeMove(new MovePlace(coords, player));
         if (validity == MoveValidity.LEGAL) {
+            board.makeMove(coords, player);
             client.sendMove(new MovePlace(coords, player));
-            return true;
+            client.processIncomingMove();
         }
         else{
             System.out.println("invalid move " + coords.getX() + " " + coords.getY() + " " + validity);
-            return false;
         }
 
     }
 
-    public void makeMove(Move move, PieceType color){
+    public void makeMove(Move move){
         if (state.makeMove(move) == MoveValidity.LEGAL) {
             //the Move interface doesn't provide an easy way to differentiate between the types so instanceof it is
             if (move instanceof MovePlace) {
-                board.makeMove(((MovePlace)move).getField(), color);
+                MovePlace movePlace = (MovePlace) move;
+                board.makeMove(movePlace.getField(), movePlace.getPieceType());
             }
             //else process pass or resign
         }
@@ -136,6 +153,10 @@ public final class BoardCommunicator {
         state = new GameState(n);
     }
     
+    public void setBoard(DisplayBoard board){
+        this.board = board;
+    }
+
     /**
      * getter for the BoardController
      * @return

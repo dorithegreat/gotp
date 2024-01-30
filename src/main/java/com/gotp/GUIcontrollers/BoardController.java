@@ -95,10 +95,12 @@ public class BoardController {
         leftSide.setCenter(board);
 
         communicator.setBoardContrller(this, size);
+        communicator.setBoard(board);
     }
 
-    public void requestMode(String mode) throws IOException, ClassNotFoundException{
-        communicator.send(mode);
+    //works because it's called right after the size is set
+    public void requestMode(String mode) throws InterruptedException{
+        communicator.sendGameRequest(mode, size);
     }
 
     public void setSize(int n){

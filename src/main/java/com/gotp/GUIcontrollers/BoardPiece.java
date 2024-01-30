@@ -63,17 +63,7 @@ public class BoardPiece extends StackPane {
             @Override
             public void handle(final MouseEvent e) {
                 try {
-                    if (board.check(coordinates)) {
-                        if (player == PieceType.WHITE) {
-                            circle.setFill(Color.WHITE);
-                            currentState = PieceType.WHITE;
-                        }
-                        else if(player == PieceType.BLACK) {
-                            circle.setFill(Color.BLACK);
-                            currentState = PieceType.BLACK;
-                        }
-                        circle.setVisible(true);
-                    }
+                    board.check(coordinates);
                 } catch (Exception ex) {
                     ex.printStackTrace();
                 }

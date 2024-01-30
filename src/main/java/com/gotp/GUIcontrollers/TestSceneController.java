@@ -86,7 +86,7 @@ public class TestSceneController implements Initializable {
      * @throws IOException
      */
     @FXML
-    void startGame(final ActionEvent event) throws IOException, ClassNotFoundException {
+    void startGame(final ActionEvent event) throws InterruptedException, IOException {
         //a few declarations that will be necessary for changing the scene
         Parent root;
         Stage stage;

@@ -51,8 +51,8 @@ public class DisplayBoard extends GridPane{
         return pieces[coords.getX()][coords.getY()].getCurrentColor();
     }
 
-    public boolean check(Vector coordinates) throws IOException, ClassNotFoundException {
-        return communicator.checkValidity(coordinates);
+    public void check(Vector coordinates) throws InterruptedException {
+        communicator.checkValidity(coordinates);
     }
 
     //delegates move to a specific stone that needs to change its color
