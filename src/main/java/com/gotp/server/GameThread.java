@@ -8,6 +8,7 @@ import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.function.Function;
 
+import com.gotp.game_mechanics.board.GameHistory;
 import com.gotp.game_mechanics.board.GameState;
 import com.gotp.game_mechanics.board.MoveValidity;
 import com.gotp.game_mechanics.board.PieceType;
@@ -16,6 +17,7 @@ import com.gotp.server.messages.Message;
 import com.gotp.server.messages.MessageDebug;
 import com.gotp.server.messages.enums.MessageTarget;
 import com.gotp.server.messages.enums.MessageType;
+import com.gotp.server.messages.game_thread_messages.MessageGameOver;
 import com.gotp.server.messages.game_thread_messages.MessageGameStarted;
 import com.gotp.server.messages.game_thread_messages.MessageMoveFromClient;
 import com.gotp.server.messages.game_thread_messages.MessageMoveFromServer;
@@ -207,6 +209,43 @@ public class GameThread implements Runnable {
 
         } else {
             System.out.println("GameThread: Player tried to make an invalid move: " + moveValidity.getMessage());
+        }
+
+        if (gameState.doublePass()) {
+            // Get the final score.
+            Map<PieceType, Double> overallScore = this.gameState.overallScore();
+
+            // Get the histor to later save it to the database.
+            GameHistory history = this.gameState.getHistory();
+
+            // Set the final score.
+            history.setFinalScore(overallScore);
+
+            // Who's the winner of the game?
+            if (overallScore.get(PieceType.BLACK) > overallScore.get(PieceType.WHITE)) {
+                history.setWinner(PieceType.BLACK);
+            } else {
+                history.setWinner(PieceType.WHITE);
+            }
+
+
+            // Send the game over message to both players.
+            MessageGameOver gameOverMessage = new MessageGameOver(history.getWinner(), history.getFinalScore());
+            try {
+                player1.put(gameOverMessage);
+                player2.put(gameOverMessage);
+            } catch (InterruptedException e) {
+                System.out.println("[GameThread::handleMoveFromClient] Interrupted while sending game over message!");
+                e.printStackTrace();
+            }
+
+            // Save the game to the database.
+            // TODO: save the game to the database.
+            // SharedResources.getInstance().getDatabase().insertGameHistory(history);
+
+
+            // stop the thread.
+            this.running = false;
         }
 
         return null;
