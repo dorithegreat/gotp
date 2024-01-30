@@ -7,6 +7,8 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.BlockingQueue;
 
+import com.gotp.database.Database;
+import com.gotp.database.SQLiteDatabase;
 import com.gotp.server.messages.Message;
 
 import java.net.Socket;
@@ -24,6 +26,9 @@ public final class SharedResources {
 
     /** Players waiting to join a PVP game. */
     private Set<GameRequest> waitList = Collections.synchronizedSet(new HashSet<>());
+
+    /** Database implementation. */
+    private Database database = new SQLiteDatabase();
 
     /**
      * Constructor is private to prevent instantiation.
@@ -73,5 +78,13 @@ public final class SharedResources {
      */
     public void addClient(final Socket socket, final BlockingQueue<Message> entry) {
         this.clients.put(socket, entry);
+    }
+
+    /**
+     * Get the database implementation.
+     * @return Database implementation.
+     */
+    public Database getDatabase() {
+        return database;
     }
 }

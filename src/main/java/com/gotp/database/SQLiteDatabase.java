@@ -17,6 +17,13 @@ import java.util.List;
 import com.gotp.game_mechanics.board.GameHistory;
 
 public class SQLiteDatabase implements Database {
+
+    public static void main(String[] args) {
+        SQLiteDatabase db = new SQLiteDatabase();
+        GameHistory gameHistory = db.getLastGameHistory();
+        System.out.println(gameHistory.getStartingPosition());
+    }
+
     /**
      * Serialize GameHistory object to bytes[].
      * @param gameHistory

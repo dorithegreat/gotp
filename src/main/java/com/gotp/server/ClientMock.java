@@ -16,6 +16,8 @@ import com.gotp.game_mechanics.board.move.MovePlace;
 import com.gotp.game_mechanics.utilities.Vector;
 import com.gotp.server.messages.Message;
 import com.gotp.server.messages.MessageDebug;
+import com.gotp.server.messages.database_messages.MessageDatabaseRequest;
+import com.gotp.server.messages.database_messages.MessageDatabaseResponse;
 import com.gotp.server.messages.enums.MessageTarget;
 import com.gotp.server.messages.enums.MessageType;
 import com.gotp.server.messages.game_thread_messages.MessageGameStarted;
@@ -107,6 +109,7 @@ public final class ClientMock {
         commands.put("debug", ClientMock::commandDebug);
         commands.put("read", ClientMock::commandRead);
         commands.put("move", ClientMock::commandMove);
+        commands.put("database", ClientMock::commandDatabase);
         commands.put("exit", ClientMock::commandExit);
     }
 
@@ -158,6 +161,18 @@ public final class ClientMock {
         }
 
         System.out.println(gameState);
+        return null;
+    }
+
+    /**
+     * Handle a gameHistory response message.
+     * @param message
+     * @return Void
+     */
+    public static Void handleDatabaseResponse(final Message message) {
+        MessageDatabaseResponse messageMoveFromClient = (MessageDatabaseResponse) message;
+        System.out.println("[<-] Game history: " + messageMoveFromClient.getGameHistory().getStartingPosition());
+
         return null;
     }
 
@@ -227,6 +242,17 @@ public final class ClientMock {
         }
 
         System.out.println(gameState);
+        return null;
+    }
+
+    private static Void commandDatabase(final String[] inputTokens) {
+        final MessageDatabaseRequest message = new MessageDatabaseRequest();
+        try {
+            server.send(message);
+        } catch (IOException e) {
+            System.out.println("[ClientMock::commandDatabase] Can't send message!");
+            e.printStackTrace();
+        }
         return null;
     }
 

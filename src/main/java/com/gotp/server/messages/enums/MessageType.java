@@ -14,5 +14,8 @@ public enum MessageType {
     DEBUG,
 
     /** Connection related types. */
-    CLIENT_DISCONNECTED, SERVER_DISCONNECTED
+    CLIENT_DISCONNECTED, SERVER_DISCONNECTED,
+
+    /** Database messages. */
+    DATABASE_REQUEST, DATABASE_RESPONSE
 }
