@@ -4,6 +4,7 @@ import java.io.IOException;
 
 import com.gotp.GUIcontrollers.BoardController;
 import com.gotp.GUIcontrollers.DisplayBoard;
+import com.gotp.GUIcontrollers.EndScreenController;
 import com.gotp.game_mechanics.board.Board;
 import com.gotp.game_mechanics.board.GameState;
 import com.gotp.game_mechanics.board.MoveValidity;
@@ -14,9 +15,9 @@ import com.gotp.game_mechanics.board.move.MovePass;
 import com.gotp.game_mechanics.board.move.MovePlace;
 import com.gotp.game_mechanics.utilities.Vector;
 import com.gotp.server.Client.GameType;
+import com.gotp.server.messages.game_thread_messages.MessageGameOver;
 import com.gotp.server.messages.game_thread_messages.MessageMoveFromServer;
 
-import javafx.application.Platform;
 import javafx.concurrent.Task;
 
 /**
@@ -61,6 +62,9 @@ public final class BoardCommunicator {
     private PieceType player;
 
 
+    /**
+     * empty constructor, but specifically private (it's a singleton)
+     */
     private BoardCommunicator() {
 
     }
@@ -77,26 +81,30 @@ public final class BoardCommunicator {
     }
 
     /**
-     * relays a message from the board to the client, to be sent to the server.
+     * handles passing and resigning
+     * the name is a bit misleading for historic reasons (this method went through a lot)
      * @param message type of message to be sent
      */
     public void send(String message) throws InterruptedException, IOException {
+        MoveValidity validity;
         switch (message) {
             case "pass":
-                if (state.makeMove(new MovePass(player)) == MoveValidity.LEGAL) {
+                validity = state.makeMove(new MovePass(player));
+                if (validity == MoveValidity.LEGAL) {
                     client.sendMove(new MovePass(player));
                 }
                 else {
-                    System.out.println("you can't pass right now");
+                    System.out.println("pass: " + validity);
                 }
                 break;
 
             case "resign":
-                if (state.makeMove(new MoveGiveUp(player)) == MoveValidity.LEGAL) {
+                validity = state.makeMove(new MoveGiveUp(player));
+                if (validity == MoveValidity.LEGAL) {
                     client.sendMove(new MoveGiveUp(player));   
                 }
                 else {
-                    System.out.println("you can't give up");
+                    System.out.println("resign: " + validity);
                 }
                 break;
 
@@ -105,6 +113,13 @@ public final class BoardCommunicator {
         }
     }
 
+    /**
+     * forwards a game request to the client, specifying its type
+     * @param mode requested game mode (PVP or BOT)
+     * @param n size of the board
+     * @throws InterruptedException
+     * @throws IOException
+     */
     public void sendGameRequest(String mode, int n) throws InterruptedException, IOException {
         if ("player".equals(mode)) {
             client.requestGameMode(GameType.PVP, n);
@@ -117,39 +132,62 @@ public final class BoardCommunicator {
         }
     }
 
+    /**
+     * will show current points of both players.
+     * I'll implement it if I have the time
+     */
     public void updatePoints(){
         // TODO implement
     }
 
+    /**
+     * forwards a move to the client, but only if it's legal.
+     * updates the board at least once every time it's called
+     */
     public void checkValidity(Vector coords) throws InterruptedException, IOException{
         MoveValidity validity = state.makeMove(new MovePlace(coords, player));
-        System.out.println(validity);
+        // System.out.println(validity);
         if (validity == MoveValidity.LEGAL) {
             client.sendMove(new MovePlace(coords, player));
+
+            // * task, so that the long waiting for response doesn't block javafx from updating
             Task<Void> task = new Task<Void>() {
                 @Override
                 public Void call() throws InterruptedException, IOException{
-                    MessageMoveFromServer response = (MessageMoveFromServer) client.receivedQueue.take();
-                    makeMove(response.getMove());
+                    //goes directly to the client's field
+                    // * I should probably change that
+                    // MessageMoveFromServer response = (MessageMoveFromServer) client.receivedQueue.take();
+                    // makeMove(response.getMove());
+                    client.checkInbox();
                     return null;
                 }
             };
             new Thread(task).start();
         }
+        else {
+            System.out.println(validity);
+        }
         drawBoard();
     }
 
 
+    /**
+     * executes a move received from the server
+     * @param move
+     * @throws IOException
+     */
     public void makeMove(Move move) throws IOException {
         //makes the move in the GameState, regardless of type
         if (state.makeMove(move) == MoveValidity.LEGAL) {
             //the Move interface doesn't provide an easy way to differentiate between the types so instanceof it is
             if (move instanceof MovePlace) {
                 MovePlace movePlace = (MovePlace) move;
-                board.makeMove(movePlace.getField(), movePlace.getPieceType());
+                // board.makeMove(movePlace.getField(), movePlace.getPieceType());
+                drawBoard();
             }
             else if (move instanceof MoveGiveUp) {
-                boardController.swtichToEndScreen();
+                //I don't think the serer is sending those
+                //I'm not sure how to process it
             }
             //there's not much to process for MovePass
         }
@@ -158,6 +196,9 @@ public final class BoardCommunicator {
         }
     }
 
+    /**
+     * gets current state of the board from GameState and updates all pieces to match it.
+     */
     public void drawBoard(){
         Board stateBoard = state.getBoardCopy();
         for (int i = 0; i < stateBoard.getBoardSize(); i++) {
@@ -166,6 +207,24 @@ public final class BoardCommunicator {
             }
         }
         
+    }
+
+    /**
+     * ends the game when the server sends a message about it.
+     */
+    public void endGame (MessageGameOver message) throws IOException, InterruptedException {
+        EndScreenController.Result result;
+        if (message.getWinner() == player) {
+            result = EndScreenController.Result.WON;
+        }
+        else {
+            result = EndScreenController.Result.LOST;
+        }
+        boardController.swtichToEndScreen(result);
+    }
+
+    public void sendDatabaseRequest() throws IOException, InterruptedException {
+        client.requestDatabase();
     }
 
 
@@ -210,8 +269,18 @@ public final class BoardCommunicator {
         return client;
     }
 
-    public void setPlayer(PieceType color){
+    /**
+     * sets the color of the player
+     */
+    public void setPlayer(PieceType color) {
         player = color;
         board.setPlayer(color);
+    }
+
+    /**
+     * getter for player
+     */
+    public PieceType getPlayer() {
+        return player;
     }
 }

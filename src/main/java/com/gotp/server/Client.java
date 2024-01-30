@@ -14,9 +14,12 @@ import com.gotp.game_mechanics.board.PieceType;
 import com.gotp.game_mechanics.board.move.Move;
 import com.gotp.game_mechanics.board.move.MovePass;
 import com.gotp.server.messages.Message;
+import com.gotp.server.messages.database_messages.MessageDatabaseRequest;
+import com.gotp.server.messages.database_messages.MessageDatabaseResponse;
 import com.gotp.server.messages.enums.MessageFunction;
 import com.gotp.server.messages.enums.MessageTarget;
 import com.gotp.server.messages.enums.MessageType;
+import com.gotp.server.messages.game_thread_messages.MessageGameOver;
 import com.gotp.server.messages.game_thread_messages.MessageGameStarted;
 import com.gotp.server.messages.game_thread_messages.MessageMoveFromClient;
 import com.gotp.server.messages.game_thread_messages.MessageMoveFromServer;
@@ -44,6 +47,12 @@ public final class Client extends Application {
     private int authenticationKey;
 
     private BlockingQueue<Message> serverQueue;
+
+    /**
+     * I made this public so that the BoardCommunicator could access it directly.
+     * * I really should at least make a getter instead
+     * it doesn't matter that much because it's only an output anyway
+     */
     public BlockingQueue<Message> receivedQueue;
 
 
@@ -91,7 +100,6 @@ public final class Client extends Application {
      * @param args standard arguments
      */
     public static void main(final String[] args) {
-        System.out.println("started");
         launch();
     }
 
@@ -104,11 +112,20 @@ public final class Client extends Application {
      */
     public void checkInbox() throws InterruptedException, IOException{
             Message response = receivedQueue.take();
+            System.out.println("inbox:");
+            System.out.println(response.getType());
             if (response.getType() == MessageType.GAME_STARTED) {
                 startGame(response);
             }
             else if (response.getType() == MessageType.MOVE_FROM_SERVER) {
                 processIncomingMove(response);
+            }
+            else if (response.getType() == MessageType.DATABASE_RESPONSE) {
+                startReplay(response);
+            }
+            else if (response.getType() == MessageType.GAME_OVER) {
+                System.out.println("game over");
+                board.endGame((MessageGameOver) response);
             }
     }
 
@@ -129,6 +146,12 @@ public final class Client extends Application {
     public void processIncomingMove(Message response) throws IOException{
         MessageMoveFromServer moveMessage = (MessageMoveFromServer) response;
         board.makeMove(moveMessage.getMove());
+    }
+
+    public void startReplay(Message response) throws IOException, InterruptedException {
+        MessageDatabaseResponse dataMessage = (MessageDatabaseResponse) response;
+        DatabaseProcessor databaseProcessor = new DatabaseProcessor(dataMessage.getGameHistory());
+        databaseProcessor.startReplay();
     }
     /**
      * communicates player's last move to the server
@@ -154,8 +177,9 @@ public final class Client extends Application {
         
     }
 
-    public void requestDatabase(){
-        //send an appropriate message
+    public void requestDatabase() throws IOException, InterruptedException{
+        serverQueue.put(new MessageDatabaseRequest());
+        checkInbox();
         //get a response and call method in BoardCommunicator
         //DatabaseProcessor databaseProcessor = new DatabaseProcessor(response.gethistory);
         //databaseProcessor.startReplay
