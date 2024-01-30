@@ -20,6 +20,7 @@ import com.gotp.server.messages.database_messages.MessageDatabaseRequest;
 import com.gotp.server.messages.database_messages.MessageDatabaseResponse;
 import com.gotp.server.messages.enums.MessageTarget;
 import com.gotp.server.messages.enums.MessageType;
+import com.gotp.server.messages.game_thread_messages.MessageGameOver;
 import com.gotp.server.messages.game_thread_messages.MessageGameStarted;
 import com.gotp.server.messages.game_thread_messages.MessageMoveFromClient;
 import com.gotp.server.messages.game_thread_messages.MessageMoveFromServer;
@@ -122,6 +123,8 @@ public final class ClientMock {
     private static void initializeMessageHandlers() {
         messageHandlers.put(MessageType.GAME_STARTED, ClientMock::handleGameStarted);
         messageHandlers.put(MessageType.MOVE_FROM_SERVER, ClientMock::handleMoveFromServer);
+        messageHandlers.put(MessageType.DATABASE_RESPONSE, ClientMock::handleDatabaseResponse);
+        messageHandlers.put(MessageType.GAME_OVER, ClientMock::handleGameOver);
     }
 
     /**
@@ -172,6 +175,30 @@ public final class ClientMock {
     public static Void handleDatabaseResponse(final Message message) {
         MessageDatabaseResponse messageMoveFromClient = (MessageDatabaseResponse) message;
         System.out.println("[<-] Game history: " + messageMoveFromClient.getGameHistory().getStartingPosition());
+
+        return null;
+    }
+
+    /**
+     * Handle game over.
+     * @param message
+     * @return Void
+     */
+    public static Void handleGameOver(final Message message) {
+        MessageGameOver messageGameOver = (MessageGameOver) message;
+
+        // Display score
+        System.out.println("[<-] Final score: ");
+        messageGameOver.getFinalScore().forEach((key, value) -> {
+            System.out.println("[<-] " + key + ": " + value);
+        });
+
+        // Display winner
+        if (messageGameOver.getWinner() == myPieceType) {
+            System.out.println("[<-] You won!");
+        } else {
+            System.out.println("[<-] You lost!");
+        }
 
         return null;
     }

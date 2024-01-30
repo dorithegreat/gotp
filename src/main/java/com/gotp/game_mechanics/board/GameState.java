@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import com.gotp.game_mechanics.board.move.Move;
 import com.gotp.game_mechanics.board.move.MoveGiveUp;
@@ -231,6 +232,59 @@ public class GameState {
         }
 
         return MoveValidity.LEGAL;
+    }
+
+    /**
+     * True if last to moves were passes.
+     * @return boolean
+     */
+    public boolean doublePass() {
+        if (this.history.size() < 2) {
+            return false;
+        }
+        // Get last element of this.history
+        Move lastMove = this.history.get(this.history.size() - 1);
+        Move previousMove = this.history.get(this.history.size() - 2);
+
+        return lastMove instanceof MovePass && previousMove instanceof MovePass;
+    }
+
+    /**
+     * Returns an overall score.
+     * @return Overall score for everything.
+     */
+    public Map<PieceType, Double> overallScore() {
+        // points from captured groups
+        double whiteScore = this.score.get(PieceType.WHITE);
+        double blackScore = this.score.get(PieceType.BLACK);
+
+        // points from placed pieces
+        List<Group> groups = this.board.groups();
+        for (Group group : groups) {
+            if (group.getPieceType() == PieceType.WHITE) {
+                whiteScore += group.size();
+            } else {
+                blackScore += group.size();
+            }
+        }
+
+        // add points for territories
+        List<Set<Vector>> territories = this.board.allTerritories();
+        PieceType territoryOwner;
+        for (Set<Vector> territory : territories) {
+            territoryOwner = this.board.territoryOwner(territory);
+            if (territoryOwner == PieceType.WHITE) {
+                whiteScore += territory.size();
+            } else if (territoryOwner == PieceType.BLACK) {
+                blackScore += territory.size();
+            }
+        }
+
+        Map<PieceType, Double> overallScore = new HashMap<>();
+        overallScore.put(PieceType.WHITE, whiteScore);
+        overallScore.put(PieceType.BLACK, blackScore);
+
+        return overallScore;
     }
 
     /**

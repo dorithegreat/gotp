@@ -217,6 +217,43 @@ public class Board {
     }
 
     /**
+     * Given a starting positions finds all empty fields in this "group".
+     * @param startingField
+     * @return group of Vectors representing fields of the group.
+     */
+    public Set<Vector> territory(final Vector startingField) {
+        PieceType searchedColor = PieceType.EMPTY;
+
+        HashSet<Vector> result = new HashSet<Vector>();
+        HashSet<Vector> fieldsToCheck = new HashSet<Vector>();
+        HashSet<Vector> newFieldsToCheck = new HashSet<Vector>();
+        HashSet<Vector> alreadyChecked = new HashSet<Vector>();
+        fieldsToCheck.add(startingField);
+
+        while (!fieldsToCheck.isEmpty()) {
+            for (Vector field : fieldsToCheck) {
+                alreadyChecked.add(field);
+
+                if (this.getField(field) != searchedColor) {
+                    continue;
+                }
+
+                result.add(field);
+                newFieldsToCheck.addAll(this.neighbours(field));
+            }
+            newFieldsToCheck.removeAll(alreadyChecked);
+
+            Object temp = newFieldsToCheck.clone();
+            if (temp instanceof HashSet<?>) {
+                fieldsToCheck = (HashSet<Vector>) temp;
+            }
+            // fieldsToCheck = (HashSet<Vector>) newFieldsToCheck.clone();
+        }
+
+        return result;
+    }
+
+    /**
      * Returns all groups on the board.
      * @return ArrayList of groups.
      */
@@ -237,6 +274,60 @@ public class Board {
         }
 
         return result;
+    }
+
+    /**
+     * Returns all groups on the board.
+     * @return ArrayList of groups.
+     */
+    public List<Set<Vector>> allTerritories() {
+        ArrayList<Set<Vector>> result = new ArrayList<>();
+        HashSet<Vector> alreadyChecked = new HashSet<>();
+
+        for (int i = 0; i < this.boardSize; i++) {
+            for (int ii = 0; ii < this.boardSize; ii++) {
+                Vector currentField = new Vector(i, ii);
+                if (alreadyChecked.contains(currentField) || this.getField(currentField) != PieceType.EMPTY) {
+                    continue;
+                }
+                Set<Vector> currentTerritory = this.territory(currentField);
+                result.add(currentTerritory);
+                alreadyChecked.addAll(currentTerritory);
+            }
+        }
+
+        return result;
+    }
+
+    /**
+     * Returns the owner of the given territory.
+     * @param territory
+     * @return PieceType
+     */
+    public PieceType territoryOwner(final Set<Vector> territory) {
+        boolean whiteNeighbour = false;
+        boolean blackNeighbour = false;
+
+        for (Vector field : territory) {
+            for (Vector neighbour : this.neighbours(field)) {
+                if (this.getField(neighbour) == PieceType.WHITE) {
+                    whiteNeighbour = true;
+                }
+                if (this.getField(neighbour) == PieceType.BLACK) {
+                    blackNeighbour = true;
+                }
+            }
+        }
+
+        if (whiteNeighbour && blackNeighbour) {
+            return PieceType.EMPTY;
+        } else if (whiteNeighbour) {
+            return PieceType.WHITE;
+        } else if (blackNeighbour) {
+            return PieceType.BLACK;
+        } else {
+            return PieceType.EMPTY;
+        }
     }
 
     /**
