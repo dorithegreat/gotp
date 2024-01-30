@@ -1,5 +1,7 @@
 package com.gotp.GUIcontrollers;
 
+import java.io.IOException;
+
 import com.gotp.game_mechanics.board.PieceType;
 import com.gotp.game_mechanics.utilities.Vector;
 
@@ -38,6 +40,8 @@ public class BoardPiece extends StackPane {
 
     private Vector coordinates;
 
+    private Circle circle;
+
     /**
      * Constructor.
      * Also assigns a handler to change color of the piece when clicked
@@ -50,7 +54,7 @@ public class BoardPiece extends StackPane {
 
         //creates a circle (player's stone) and hides it by default
         //this circle is the only content of this stack pane, but it can be expanded in the future
-        Circle circle = new Circle(20);
+        circle = new Circle(20);
         circle.setVisible(false);
         getChildren().add(circle);
 
@@ -58,19 +62,29 @@ public class BoardPiece extends StackPane {
         setOnMouseClicked(new EventHandler<MouseEvent>() {
             @Override
             public void handle(final MouseEvent e) {
-                if (board.check(coordinates)) {
-                    if (player == PieceType.WHITE) {
-                        circle.setFill(Color.WHITE);
-                        currentState = PieceType.WHITE;
-                    }
-                    else if(player == PieceType.BLACK) {
-                        circle.setFill(Color.BLACK);
-                        currentState = PieceType.BLACK;
-                    }
-                    circle.setVisible(true);
+                try {
+                    board.check(coordinates);
+                } catch (Exception ex) {
+                    ex.printStackTrace();
                 }
             }
         });
+    }
+
+
+    public void makeMove(PieceType color){
+        currentState = color;
+        if (color == PieceType.WHITE) {
+            circle.setFill(Color.WHITE);
+            circle.setVisible(true);
+        }
+        else if (color == PieceType.BLACK) {
+            circle.setFill(Color.BLACK);
+            circle.setVisible(true);
+        }
+        else {
+            circle.setVisible(false);
+        }
     }
 
     /**

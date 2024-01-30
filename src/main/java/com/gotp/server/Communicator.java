@@ -39,6 +39,7 @@ public class Communicator {
      */
     public void send(final Message message) throws IOException {
         objectOutput.writeObject(message);
+        System.out.println("sent " + message.getType());
     }
 
     /**

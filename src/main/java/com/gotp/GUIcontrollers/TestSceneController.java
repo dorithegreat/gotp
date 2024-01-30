@@ -83,10 +83,10 @@ public class TestSceneController implements Initializable {
     /**
      * Handler for the start button, goes to the board screen and starts the game.
      * @param event
-     * @throws IOException //TODO figure out when
+     * @throws IOException
      */
     @FXML
-    void startGame(final ActionEvent event) throws IOException {
+    void startGame(final ActionEvent event) throws InterruptedException, IOException {
         //a few declarations that will be necessary for changing the scene
         Parent root;
         Stage stage;
