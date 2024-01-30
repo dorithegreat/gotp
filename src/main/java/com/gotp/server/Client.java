@@ -47,6 +47,12 @@ public final class Client extends Application {
     private int authenticationKey;
 
     private BlockingQueue<Message> serverQueue;
+
+    /**
+     * I made this public so that the BoardCommunicator could access it directly.
+     * * I really should at least make a getter instead
+     * it doesn't matter that much because it's only an output anyway
+     */
     public BlockingQueue<Message> receivedQueue;
 
 
@@ -94,7 +100,6 @@ public final class Client extends Application {
      * @param args standard arguments
      */
     public static void main(final String[] args) {
-        System.out.println("started");
         launch();
     }
 
@@ -107,6 +112,8 @@ public final class Client extends Application {
      */
     public void checkInbox() throws InterruptedException, IOException{
             Message response = receivedQueue.take();
+            System.out.println("inbox:");
+            System.out.println(response.getType());
             if (response.getType() == MessageType.GAME_STARTED) {
                 startGame(response);
             }
@@ -117,6 +124,7 @@ public final class Client extends Application {
                 startReplay(response);
             }
             else if (response.getType() == MessageType.GAME_OVER) {
+                System.out.println("game over");
                 board.endGame((MessageGameOver) response);
             }
     }

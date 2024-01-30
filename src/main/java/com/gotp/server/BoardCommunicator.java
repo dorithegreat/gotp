@@ -18,7 +18,6 @@ import com.gotp.server.Client.GameType;
 import com.gotp.server.messages.game_thread_messages.MessageGameOver;
 import com.gotp.server.messages.game_thread_messages.MessageMoveFromServer;
 
-import javafx.application.Platform;
 import javafx.concurrent.Task;
 
 /**
@@ -87,22 +86,25 @@ public final class BoardCommunicator {
      * @param message type of message to be sent
      */
     public void send(String message) throws InterruptedException, IOException {
+        MoveValidity validity;
         switch (message) {
             case "pass":
-                if (state.makeMove(new MovePass(player)) == MoveValidity.LEGAL) {
+                validity = state.makeMove(new MovePass(player));
+                if (validity == MoveValidity.LEGAL) {
                     client.sendMove(new MovePass(player));
                 }
                 else {
-                    System.out.println("you can't pass right now");
+                    System.out.println("pass: " + validity);
                 }
                 break;
 
             case "resign":
-                if (state.makeMove(new MoveGiveUp(player)) == MoveValidity.LEGAL) {
+                validity = state.makeMove(new MoveGiveUp(player));
+                if (validity == MoveValidity.LEGAL) {
                     client.sendMove(new MoveGiveUp(player));   
                 }
                 else {
-                    System.out.println("you can't give up");
+                    System.out.println("resign: " + validity);
                 }
                 break;
 
@@ -144,18 +146,26 @@ public final class BoardCommunicator {
      */
     public void checkValidity(Vector coords) throws InterruptedException, IOException{
         MoveValidity validity = state.makeMove(new MovePlace(coords, player));
-        System.out.println(validity);
+        // System.out.println(validity);
         if (validity == MoveValidity.LEGAL) {
             client.sendMove(new MovePlace(coords, player));
+
+            // * task, so that the long waiting for response doesn't block javafx from updating
             Task<Void> task = new Task<Void>() {
                 @Override
                 public Void call() throws InterruptedException, IOException{
-                    MessageMoveFromServer response = (MessageMoveFromServer) client.receivedQueue.take();
-                    makeMove(response.getMove());
+                    //goes directly to the client's field
+                    // * I should probably change that
+                    // MessageMoveFromServer response = (MessageMoveFromServer) client.receivedQueue.take();
+                    // makeMove(response.getMove());
+                    client.checkInbox();
                     return null;
                 }
             };
             new Thread(task).start();
+        }
+        else {
+            System.out.println(validity);
         }
         drawBoard();
     }
@@ -172,7 +182,8 @@ public final class BoardCommunicator {
             //the Move interface doesn't provide an easy way to differentiate between the types so instanceof it is
             if (move instanceof MovePlace) {
                 MovePlace movePlace = (MovePlace) move;
-                board.makeMove(movePlace.getField(), movePlace.getPieceType());
+                // board.makeMove(movePlace.getField(), movePlace.getPieceType());
+                drawBoard();
             }
             else if (move instanceof MoveGiveUp) {
                 //I don't think the serer is sending those
@@ -212,7 +223,7 @@ public final class BoardCommunicator {
         boardController.swtichToEndScreen(result);
     }
 
-    public void sendDatabaseRequest(){
+    public void sendDatabaseRequest() throws IOException, InterruptedException {
         client.requestDatabase();
     }
 

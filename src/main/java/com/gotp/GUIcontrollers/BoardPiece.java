@@ -48,7 +48,7 @@ public class BoardPiece extends StackPane {
         setOnMouseClicked(new EventHandler<MouseEvent>() {
             @Override
             public void handle(final MouseEvent e) {
-                System.out.println("clicked " + coordinates.getX() + " " + coordinates.getY());
+                // System.out.println("clicked " + coordinates.getX() + " " + coordinates.getY());
                 if (currentState == PieceType.EMPTY) {
                     if (board.getPlayer() == PieceType.BLACK) {
                         circle.setFill(Color.BLACK);
