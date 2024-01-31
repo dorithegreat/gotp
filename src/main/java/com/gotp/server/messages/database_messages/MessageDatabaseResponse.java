@@ -1,12 +1,14 @@
 package com.gotp.server.messages.database_messages;
 
+import java.io.Serializable;
+
 import com.gotp.game_mechanics.board.GameHistory;
 import com.gotp.server.messages.Message;
 import com.gotp.server.messages.enums.MessageFunction;
 import com.gotp.server.messages.enums.MessageTarget;
 import com.gotp.server.messages.enums.MessageType;
 
-public class MessageDatabaseResponse implements Message {
+public class MessageDatabaseResponse implements Message, Serializable {
     /**
      * Get the message function.
      * @return MessageFunction.DATA_MESSAGE

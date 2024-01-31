@@ -79,6 +79,8 @@ public class ServerThread implements Runnable {
             System.out.println("ServerThread interrupted!");
             e.printStackTrace();
         }
+
+        System.out.println("[ServerThread] Stopped.");
     }
 
     /**

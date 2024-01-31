@@ -29,7 +29,7 @@ public final class Server {
         Socket clientSocket;
 
         try (ServerSocket serverSocket = new ServerSocket(portNumber)) {
-            System.out.println("### Server Started! ###");
+            System.out.println("|=========< Server Started! >=========|");
 
             while (true) {
                 clientSocket = serverSocket.accept();

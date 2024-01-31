@@ -7,6 +7,7 @@ import java.util.Map;
 import java.util.Scanner;
 import java.util.function.Function;
 
+import com.gotp.game_mechanics.board.GameHistory;
 import com.gotp.game_mechanics.board.GameState;
 import com.gotp.game_mechanics.board.MoveValidity;
 import com.gotp.game_mechanics.board.PieceType;
@@ -177,8 +178,37 @@ public final class ClientMock {
      * @return Void
      */
     public static Void handleDatabaseResponse(final Message message) {
-        MessageDatabaseResponse messageMoveFromClient = (MessageDatabaseResponse) message;
-        System.out.println("[<-] Game history: " + messageMoveFromClient.getGameHistory().getStartingPosition());
+        MessageDatabaseResponse databaseResponse = (MessageDatabaseResponse) message;
+        GameHistory gameHistory = databaseResponse.getGameHistory();
+
+        // System.out.println(gameHistory.getStartingPosition());
+        // System.out.println(gameHistory.getStartingTurn());
+
+
+        GameState gameState = new GameState(gameHistory.getStartingPosition(), gameHistory.getStartingTurn());
+
+        System.out.println(gameState);
+        for (Move move : gameHistory) {
+            gameState.makeMove(move);
+            System.out.println(gameState);
+            try {
+                final long oneSecond = 1000;
+                Thread.sleep(oneSecond);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+        }
+
+        double whiteScore = gameState.overallScore().get(PieceType.WHITE);
+        double blackScore = gameState.overallScore().get(PieceType.BLACK);
+        System.out.println(gameState.overallScore());
+
+        if (whiteScore > blackScore) {
+            System.out.println("White wins!");
+        } else {
+            System.out.println("Black wins!");
+        }
+
 
         return null;
     }
@@ -272,7 +302,9 @@ public final class ClientMock {
 
         try {
             receivedMessage = server.receive();
-            messageHandlers.get(receivedMessage.getType()).apply(receivedMessage);
+            if (messageHandlers.containsKey(receivedMessage.getType())) {
+                messageHandlers.get(receivedMessage.getType()).apply(receivedMessage);
+            }
 
         } catch (ClassNotFoundException | IOException e) {
             System.out.println("[ClientMock::commandRead] Can't receive message!");
