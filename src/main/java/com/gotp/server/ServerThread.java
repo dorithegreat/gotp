@@ -11,6 +11,7 @@ import java.util.function.Function;
 import com.gotp.game_mechanics.board.GameHistory;
 import com.gotp.server.messages.Message;
 import com.gotp.server.messages.MessageDebug;
+import com.gotp.server.messages.database_messages.MessageDatabaseRequestSpecific;
 import com.gotp.server.messages.database_messages.MessageDatabaseResponse;
 import com.gotp.server.messages.enums.MessageTarget;
 import com.gotp.server.messages.enums.MessageType;
@@ -50,6 +51,7 @@ public class ServerThread implements Runnable {
         messageHandlers.put(MessageType.GAME_REQUEST_BOT, this::handleGameRequestBot);
         messageHandlers.put(MessageType.DATABASE_REQUEST, this::handleDatabaseRequest);
         messageHandlers.put(MessageType.CLIENT_DISCONNECTED, this::handleClientDisconnect);
+        messageHandlers.put(MessageType.DATABASE_REQUEST_SPECIFIC, this::handleSpecificDatabaseRequest);
     }
 
     /**
@@ -197,6 +199,26 @@ public class ServerThread implements Runnable {
      */
     public Void handleDatabaseRequest(final Message message) {
         GameHistory gameHistory = SharedResources.getInstance().getDatabase().getLastGameHistory();
+        MessageDatabaseResponse response = new MessageDatabaseResponse(gameHistory);
+        try {
+            clientQueue.put(response);
+        } catch (InterruptedException e) {
+            System.out.println("[ServerThread::handleDatabaseResponse] Interrupted while sending database response.");
+            e.printStackTrace();
+        }
+        return null;
+    }
+
+    /**
+     * Handle a database request with and id.
+     * @param message
+     * @return Void
+     */
+    public Void handleSpecificDatabaseRequest(final Message message) {
+        MessageDatabaseRequestSpecific request = (MessageDatabaseRequestSpecific) message;
+        final int id = request.getId();
+        GameHistory gameHistory = SharedResources.getInstance().getDatabase().getGameHistory(id);
+
         MessageDatabaseResponse response = new MessageDatabaseResponse(gameHistory);
         try {
             clientQueue.put(response);

@@ -280,8 +280,7 @@ public class GameThread implements Runnable {
             }
 
             // Save the game to the database.
-            // TODO: save the game to the database.
-            // SharedResources.getInstance().getDatabase().insertGameHistory(history);
+            SharedResources.getInstance().getDatabase().insertGameHistory(history);
 
 
             // stop the thread.
