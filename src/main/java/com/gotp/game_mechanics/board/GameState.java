@@ -104,7 +104,7 @@ public class GameState {
 
         this.turn = PieceType.BLACK;
 
-        this.history = new GameHistory(this.turn, this.board.toString());
+        this.history = new GameHistory(this.turn, this.board.standardBoardString());
         this.history.setWinner(null);
     }
 
@@ -363,9 +363,16 @@ public class GameState {
         scoreCopy.put(PieceType.WHITE, this.score.get(PieceType.WHITE));
         scoreCopy.put(PieceType.BLACK, this.score.get(PieceType.BLACK));
 
+        Board previousBoardCopy;
+        if (this.previousBoard == null) {
+            previousBoardCopy = null;
+        } else {
+            previousBoardCopy = this.previousBoard.copy();
+        }
+
         return new GameState(
                 this.board.copy(),
-                this.previousBoard.copy(),
+                previousBoardCopy,
                 this.turn,
                 scoreCopy,
                 (GameHistory) this.history.clone()

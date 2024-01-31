@@ -8,6 +8,7 @@ import java.util.Set;
 import java.util.concurrent.BlockingQueue;
 
 import com.gotp.database.Database;
+import com.gotp.database.DatabaseMock;
 import com.gotp.database.SQLiteDatabase;
 import com.gotp.server.messages.Message;
 
@@ -28,7 +29,7 @@ public final class SharedResources {
     private Set<GameRequest> waitList = Collections.synchronizedSet(new HashSet<>());
 
     /** Database implementation. */
-    private Database database = new SQLiteDatabase();
+    private Database database = new DatabaseMock();
 
     /**
      * Constructor is private to prevent instantiation.
