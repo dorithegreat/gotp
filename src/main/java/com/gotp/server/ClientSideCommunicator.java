@@ -31,6 +31,7 @@ public class ClientSideCommunicator extends Communicator {
             if (objectInput == null) {
                 return null;
             }
+            System.out.println("received");
             return (Message) objectInput.readObject();
 
         } catch (EOFException | SocketException e) {

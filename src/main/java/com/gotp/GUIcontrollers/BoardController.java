@@ -5,6 +5,7 @@ import javafx.fxml.FXMLLoader;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.control.Button;
 import javafx.event.ActionEvent;
+import javafx.scene.Node;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.stage.Stage;
@@ -12,6 +13,7 @@ import javafx.stage.Stage;
 import java.io.IOException;
 
 import com.gotp.server.BoardCommunicator;
+import com.gotp.server.Client;
 
 //javafx controller for board.fxml
 public class BoardController {
@@ -40,6 +42,9 @@ public class BoardController {
      */
     private BoardCommunicator communicator = BoardCommunicator.getInstance();
 
+    /**
+     * extension of gridpane holding a physical representation of the board.
+     */
     private DisplayBoard board;
 
     /**
@@ -76,20 +81,17 @@ public class BoardController {
         //a few declarations that will be necessary for changing the scene
         Parent root;
         Stage stage;
-        Scene scene;
 
         FXMLLoader endLoader = new FXMLLoader(getClass().getResource("end_won.fxml"));
         root = endLoader.load();
         EndScreenController endController = endLoader.getController();
 
+        // System.out.println("got controller");
         endController.setMessage(result);
         
         //code that changes the scene
-
-        //a workaround, gets stage for the grid, which is also the stage this controller is for
         stage = (Stage) leftSide.getScene().getWindow();
-        scene = new Scene(root);
-        stage.setScene(scene);
+        stage.getScene().setRoot(root);
         stage.show();
     }
 

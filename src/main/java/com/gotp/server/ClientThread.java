@@ -26,7 +26,7 @@ public class ClientThread implements Runnable {
      */
     @Override
     public void run() {
-        String serverAddress = "localhost";
+        String serverAddress = "192.168.1.96";
         final int serverPort = 12345;
 
         // Open the socket with the server.
@@ -34,7 +34,7 @@ public class ClientThread implements Runnable {
             System.out.println("Connected to server.");
 
             // Create a Stream to communicate with the server.
-            Communicator server = new Communicator(socket);
+            ClientSideCommunicator server = new ClientSideCommunicator(socket);
 
             //lambda expression that makes a new thread executing the private method
             //wrapped in try-catch because java is sometimes stupid (it doesn't work otherwise)
@@ -63,7 +63,7 @@ public class ClientThread implements Runnable {
         }
     }
 
-    private void readFromServer(Communicator communicator) throws IOException, ClassNotFoundException,InterruptedException{
+    private void readFromServer(ClientSideCommunicator communicator) throws IOException, ClassNotFoundException,InterruptedException{
         while (true) {
             Message received = communicator.receive();
             writeQueue.put(received);

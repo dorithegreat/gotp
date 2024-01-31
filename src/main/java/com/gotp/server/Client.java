@@ -27,6 +27,8 @@ import com.gotp.server.messages.server_thread_messages.MessageGameRequestPVP;
  */
 public final class Client extends Application {
 
+    private static Stage thisStage;
+
     public enum GameType {
         PVP, BOT
     }
@@ -53,10 +55,10 @@ public final class Client extends Application {
      * Main method.
      */
     public void start(Stage stage) throws IOException, InterruptedException {
-
         Scene scene = new Scene(loadFXML("testScene"));
         stage.setScene(scene);
         stage.show();
+        thisStage = stage;
 
         //links to the BoardCommunicator which handles the GUI
         board = BoardCommunicator.getInstance();
@@ -91,6 +93,10 @@ public final class Client extends Application {
         launch();
     }
 
+    public static Stage getStage(){
+        return thisStage;
+    }
+
     //------------------------------------------------------
     //          functions for sending info to server
     //------------------------------------------------------
@@ -101,7 +107,7 @@ public final class Client extends Application {
     public void checkInbox() throws InterruptedException, IOException{
             Message response = receivedQueue.take();
             //System.out.println("inbox:");
-            //System.out.println(response.getType());
+            System.out.println(response.getType());
             if (response.getType() == MessageType.GAME_STARTED) {
                 startGame(response);
             }
@@ -149,6 +155,7 @@ public final class Client extends Application {
      */
     public void startReplay(Message response) throws IOException, InterruptedException {
         MessageDatabaseResponse dataMessage = (MessageDatabaseResponse) response;
+        board.makeNewBoard(dataMessage.getGameHistory());
         DatabaseProcessor databaseProcessor = new DatabaseProcessor(dataMessage.getGameHistory());
         databaseProcessor.startReplay();
     }
