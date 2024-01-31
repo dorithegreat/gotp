@@ -1,9 +1,17 @@
 package com.gotp.GUIcontrollers;
 
+import com.gotp.game_mechanics.board.PieceType;
+import com.gotp.server.BoardCommunicator;
+
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
+import javafx.fxml.FXMLLoader;
+import javafx.scene.Parent;
 import javafx.scene.control.Button;
 import javafx.scene.text.Text;
+import javafx.stage.Stage;
+
+import java.io.IOException;
 
 public class EndScreenController {
 
@@ -42,8 +50,28 @@ public class EndScreenController {
     }
 
     @FXML
-    void startReplay(ActionEvent event) {
+    void startReplay(ActionEvent event) throws IOException, InterruptedException{
+        BoardCommunicator.getInstance().sendDatabaseRequest();
+        BoardCommunicator.getInstance().setPlayer(PieceType.EMPTY);
+    }
 
+    public void changeToBoard(int n) throws IOException{
+        //a few declarations that will be necessary for changing the scene
+        Parent root;
+        Stage stage;
+
+        FXMLLoader boardLoader = new FXMLLoader(getClass().getResource("board.fxml"));
+        root = boardLoader.load();
+        BoardController boardController = boardLoader.getController();
+
+        // System.out.println("got controller");
+        boardController.setSize(n);
+        boardController.createBoard();
+        
+        //code that changes the scene
+        stage = (Stage) message.getScene().getWindow();
+        stage.getScene().setRoot(root);
+        stage.show();
     }
 
 }

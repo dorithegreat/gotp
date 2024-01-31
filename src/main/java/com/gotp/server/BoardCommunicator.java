@@ -6,6 +6,7 @@ import com.gotp.GUIcontrollers.BoardController;
 import com.gotp.GUIcontrollers.DisplayBoard;
 import com.gotp.GUIcontrollers.EndScreenController;
 import com.gotp.game_mechanics.board.Board;
+import com.gotp.game_mechanics.board.GameHistory;
 import com.gotp.game_mechanics.board.GameState;
 import com.gotp.game_mechanics.board.MoveValidity;
 import com.gotp.game_mechanics.board.PieceType;
@@ -40,6 +41,12 @@ public final class BoardCommunicator {
      * this connection is not currently used but always could be
      */
     private BoardController boardController;
+
+    /**
+     * controller for the end screen.
+     * needed because that's where database requests happen
+     */
+    private EndScreenController endScreenController;
 
     /**
      * the object storing board pieces (GUI components) and their logic.
@@ -108,6 +115,14 @@ public final class BoardCommunicator {
             default:
                 break;
         }
+        Task<Void> task = new Task<Void>() {
+            @Override
+            public Void call() throws InterruptedException, IOException{
+                client.checkInbox();
+                return null;
+            }
+        };
+        new Thread(task).start();
     }
 
     /**
@@ -169,21 +184,8 @@ public final class BoardCommunicator {
      * @throws IOException
      */
     public void makeMove(Move move) throws IOException {
-        //makes the move in the GameState, regardless of type
-        if (state.makeMove(move) == MoveValidity.LEGAL) {
-            //the Move interface doesn't provide an easy way to differentiate between the types so instanceof it is
-            if (move instanceof MovePlace) {
-                MovePlace movePlace = (MovePlace) move;
-                drawBoard();
-            }
-            else {
-                //server should not send those
-                //but if it does there's nothing to do with them
-            }
-        }
-        else {
-            System.out.println("Server sent an illegal move");
-        }
+        state.makeMove(move);
+        drawBoard();
     }
 
     /**
@@ -211,6 +213,11 @@ public final class BoardCommunicator {
             result = EndScreenController.Result.LOST;
         }
         boardController.swtichToEndScreen(result);
+    }
+
+    public void makeNewBoard(GameHistory history) throws IOException {
+        state = new GameState(history.getStartingPosition(), history.getStartingTurn());
+        endScreenController.changeToBoard(state.getBoardSize());
     }
 
     /**
