@@ -85,6 +85,8 @@ public class BotThread implements Runnable {
             // get the move from the bot.
             Move responseMove = this.bot.getMove(gameState);
 
+            gameState.makeMove(responseMove);
+
             // send the move to the server.
             MessageMoveFromClient responseMessage = new MessageMoveFromClient(myAuthenticationKey, responseMove);
 
@@ -109,6 +111,9 @@ public class BotThread implements Runnable {
 
         // get the move from the bot.
         Move responseMove = this.bot.getMove(gameState);
+
+        // update the game state with the move from the bot.
+        gameState.makeMove(responseMove);
 
         // send the move to the server.
         MessageMoveFromClient responseMessage = new MessageMoveFromClient(myAuthenticationKey, responseMove);

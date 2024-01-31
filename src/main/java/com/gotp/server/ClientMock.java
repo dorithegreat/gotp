@@ -11,6 +11,7 @@ import com.gotp.game_mechanics.board.GameState;
 import com.gotp.game_mechanics.board.MoveValidity;
 import com.gotp.game_mechanics.board.PieceType;
 import com.gotp.game_mechanics.board.move.Move;
+import com.gotp.game_mechanics.board.move.MoveGiveUp;
 import com.gotp.game_mechanics.board.move.MovePass;
 import com.gotp.game_mechanics.board.move.MovePlace;
 import com.gotp.game_mechanics.utilities.Vector;
@@ -284,6 +285,8 @@ public final class ClientMock {
         final Move move;
         if ("pass".equals(inputTokens[1])) {
             move = new MovePass(myPieceType);
+        } else if ("resign".equals(inputTokens[1])) {
+            move = new MoveGiveUp(myPieceType);
         } else {
             int x = Integer.parseInt(inputTokens[1]);
             int y = Integer.parseInt(inputTokens[2]);

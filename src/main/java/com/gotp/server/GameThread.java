@@ -178,6 +178,11 @@ public class GameThread implements Runnable {
         }
     }
 
+    // ------------------- helper functions -------------------
+    private void finishTheGame() {
+        
+    }
+
     // ------------------- Message handlers -------------------
     /**
      * Handle a debug message.
@@ -225,7 +230,7 @@ public class GameThread implements Runnable {
         // Make a move and check if it's legal.
         MoveValidity moveValidity = gameState.makeMove(move);
 
-        if (moveValidity.isLegal()) {
+        if (moveValidity.isLegal() && !gameState.gameOver()) {
             System.out.println(gameState);
             MessageMoveFromServer moveMessage = new MessageMoveFromServer(move);
             try {
@@ -239,11 +244,12 @@ public class GameThread implements Runnable {
                 e.printStackTrace();
             }
 
-        } else {
-            System.out.println("GameThread: Player tried to make an invalid move: " + moveValidity.getMessage());
+        } else if (!moveValidity.isLegal()) {
+            System.out.println("[GameThread] Player tried to make an invalid move: " + moveValidity.getMessage());
         }
 
-        if (gameState.doublePass()) {
+        // Check if the game is over.
+        if (gameState.gameOver()) {
             // Get the final score.
             Map<PieceType, Double> overallScore = this.gameState.overallScore();
 
