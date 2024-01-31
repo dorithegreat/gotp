@@ -88,6 +88,8 @@ public class Forwarder implements Runnable {
         } catch (IOException | ClassNotFoundException | InterruptedException e) {
             e.printStackTrace();
         }
+
+        System.out.println("[Forwarder (fromClient)] Stopped.");
     }
 
     /**
@@ -144,5 +146,7 @@ public class Forwarder implements Runnable {
         } catch (IOException | InterruptedException e) {
             e.printStackTrace();
         }
+
+        System.out.println("[Forwarder (toClient)] Stopped.");
     }
 }

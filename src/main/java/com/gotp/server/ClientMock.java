@@ -272,7 +272,9 @@ public final class ClientMock {
 
         try {
             receivedMessage = server.receive();
-            messageHandlers.get(receivedMessage.getType()).apply(receivedMessage);
+            if (messageHandlers.containsKey(receivedMessage.getType())) {
+                messageHandlers.get(receivedMessage.getType()).apply(receivedMessage);
+            }
 
         } catch (ClassNotFoundException | IOException e) {
             System.out.println("[ClientMock::commandRead] Can't receive message!");

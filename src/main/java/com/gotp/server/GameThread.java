@@ -14,14 +14,14 @@ import com.gotp.game_mechanics.board.MoveValidity;
 import com.gotp.game_mechanics.board.PieceType;
 import com.gotp.game_mechanics.board.move.Move;
 import com.gotp.server.bot.BotThread;
-import com.gotp.server.bot.FirstLegalMoveBot;
-import com.gotp.server.bot.PassingBot;
+import com.gotp.server.bot.CopilotBot;
 import com.gotp.server.messages.Message;
 import com.gotp.server.messages.MessageDebug;
 import com.gotp.server.messages.enums.MessageTarget;
 import com.gotp.server.messages.enums.MessageType;
 import com.gotp.server.messages.game_thread_messages.MessageGameOver;
 import com.gotp.server.messages.game_thread_messages.MessageGameStarted;
+import com.gotp.server.messages.game_thread_messages.MessageGameStoppedAbruptly;
 import com.gotp.server.messages.game_thread_messages.MessageMoveFromClient;
 import com.gotp.server.messages.game_thread_messages.MessageMoveFromServer;
 import com.gotp.server.messages.subscription_messages.MessageSubscribeRequest;
@@ -82,7 +82,7 @@ public class GameThread implements Runnable {
             e.printStackTrace();
         }
 
-        BotThread botThread = new BotThread(new FirstLegalMoveBot(), botQueue, gameThreadQueue);
+        BotThread botThread = new BotThread(new CopilotBot(), botQueue, gameThreadQueue);
 
         new Thread(botThread).start();
 
@@ -176,6 +176,8 @@ public class GameThread implements Runnable {
             System.out.println("[GameThread] Interrupted while reading from readQueue!");
             e.printStackTrace();
         }
+
+        System.out.println("[GameThread] Stopped.");
     }
 
     // ------------------- helper functions -------------------
@@ -291,11 +293,23 @@ public class GameThread implements Runnable {
 
     /**
      * Handle client disconnect.
+     * @param message
      * @return Void.
      */
     private Void handleClientDisconnect(final Message message) {
-        // TODO: either win the game for the opposing player or end the game without conclusion.
-        // TODO: send a message to the other player that the game has ended.
+        System.out.println("[GameThread] Client disconnected!");
+        Message response = new MessageGameStoppedAbruptly();
+
+        try {
+            player1.put(response);
+            player2.put(response);
+        } catch (InterruptedException e) {
+            System.out.println(
+                "[GameThread::handleClientDisconnect] Interrupted while sending game stopped abruptly message!"
+            );
+            e.printStackTrace();
+        }
+
         this.running = false;
         return null;
     }

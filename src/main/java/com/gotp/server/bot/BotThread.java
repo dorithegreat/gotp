@@ -46,6 +46,7 @@ public class BotThread implements Runnable {
 
         this.messageHandlers.put(MessageType.GAME_STARTED, this::handleGameStart);
         this.messageHandlers.put(MessageType.MOVE_FROM_SERVER, this::handleMoveFromServer);
+        this.messageHandlers.put(MessageType.GAME_STOPPED_ABRUPTLY, this::handleClientDisconnected);
         this.messageHandlers.put(MessageType.GAME_OVER, this::handleGameOver);
     }
 
@@ -70,6 +71,7 @@ public class BotThread implements Runnable {
             e.printStackTrace();
         }
 
+        System.out.println("[BotThread] Stopped.");
     }
 
     private Void handleGameStart(final Message message) {
@@ -127,6 +129,11 @@ public class BotThread implements Runnable {
             e.printStackTrace();
         }
 
+        return null;
+    }
+
+    private Void handleClientDisconnected(final Message message) {
+        this.running = false;
         return null;
     }
 
