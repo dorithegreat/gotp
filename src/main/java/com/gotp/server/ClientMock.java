@@ -19,6 +19,7 @@ import com.gotp.game_mechanics.utilities.Vector;
 import com.gotp.server.messages.Message;
 import com.gotp.server.messages.MessageDebug;
 import com.gotp.server.messages.database_messages.MessageDatabaseRequest;
+import com.gotp.server.messages.database_messages.MessageDatabaseRequestSpecific;
 import com.gotp.server.messages.database_messages.MessageDatabaseResponse;
 import com.gotp.server.messages.enums.MessageTarget;
 import com.gotp.server.messages.enums.MessageType;
@@ -190,6 +191,7 @@ public final class ClientMock {
         System.out.println(gameState);
         for (Move move : gameHistory) {
             gameState.makeMove(move);
+            System.out.print("\033[H\033[2J");
             System.out.println(gameState);
             try {
                 final long oneSecond = 1000;
@@ -349,7 +351,14 @@ public final class ClientMock {
      * @return Void
      */
     private static Void commandDatabase(final String[] inputTokens) {
-        final MessageDatabaseRequest message = new MessageDatabaseRequest();
+        Message message;
+        if (inputTokens.length == 1) {
+            message = new MessageDatabaseRequest();
+        } else {
+            int id = Integer.parseInt(inputTokens[1]);
+            message = new MessageDatabaseRequestSpecific(id);
+        }
+
         try {
             server.send(message);
         } catch (IOException e) {

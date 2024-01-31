@@ -18,7 +18,6 @@ public class CopilotBot implements Bot {
         return new MovePlace(bestMove(gameState, gameState.getTurn()), gameState.getTurn());
     }
 
-    // TODO: finish implementing this.
     public double evaluate(GameState gameState, PieceType ourPieceType) {
         Map<PieceType, Double> score = gameState.overallScore();
         Double whiteScore = score.get(PieceType.WHITE);
