@@ -11,8 +11,6 @@ import javafx.stage.Stage;
 
 import java.io.IOException;
 
-import com.gotp.game_mechanics.board.PieceType;
-import com.gotp.game_mechanics.board.move.Move;
 import com.gotp.server.BoardCommunicator;
 
 //javafx controller for board.fxml
@@ -69,6 +67,11 @@ public class BoardController {
         communicator.send("resign");
     }
 
+    /**
+     * changes to the end screen with an appropriate message (won or lost).
+     * @param result
+     * @throws IOException
+     */
     public void swtichToEndScreen(EndScreenController.Result result) throws IOException {
         //a few declarations that will be necessary for changing the scene
         Parent root;
@@ -77,10 +80,10 @@ public class BoardController {
 
         FXMLLoader endLoader = new FXMLLoader(getClass().getResource("end_won.fxml"));
         root = endLoader.load();
-        //EndScreenController endController = endLoader.getController();
+        EndScreenController endController = endLoader.getController();
 
-        //TODO do whatever is necessery with the end screen here
-
+        endController.setMessage(result);
+        
         //code that changes the scene
 
         //a workaround, gets stage for the grid, which is also the stage this controller is for
@@ -90,6 +93,9 @@ public class BoardController {
         stage.show();
     }
 
+    /**
+     * makes an empty board at the start of the game.
+     */
     public void createBoard(){
         board = new DisplayBoard(size);
         leftSide.setCenter(board);
@@ -103,6 +109,10 @@ public class BoardController {
         communicator.sendGameRequest(mode, size);
     }
 
+    /**
+     * setter for the size of the board.
+     * @param n
+     */
     public void setSize(int n){
         size = n;
     }

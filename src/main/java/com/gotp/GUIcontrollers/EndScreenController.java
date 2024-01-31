@@ -7,6 +7,10 @@ import javafx.scene.text.Text;
 
 public class EndScreenController {
 
+    /**
+     * enum containing both possibles results of the game so that the message isn't set to some nonsense.
+     * it's impossible for a game to end in a tie
+     */
     public enum Result {
         WON, LOST
     }

@@ -2,9 +2,7 @@ package com.gotp.server;
 
 import java.io.IOException;
 import java.net.Socket;
-import java.util.Scanner;
 import java.util.concurrent.BlockingQueue;
-import java.util.concurrent.LinkedBlockingDeque;
 
 import com.gotp.server.messages.Message;
 
@@ -29,7 +27,6 @@ public class ReceiverThread implements Runnable{
     @Override
     public void run() {
         String serverAddress = "localhost";
-        Scanner scanner = new Scanner(System.in);
         final int serverPort = 12345;
 
         // Open the socket with the server.

@@ -12,19 +12,15 @@ import javafx.scene.Scene;
 
 import com.gotp.game_mechanics.board.PieceType;
 import com.gotp.game_mechanics.board.move.Move;
-import com.gotp.game_mechanics.board.move.MovePass;
 import com.gotp.server.messages.Message;
 import com.gotp.server.messages.database_messages.MessageDatabaseRequest;
 import com.gotp.server.messages.database_messages.MessageDatabaseResponse;
-import com.gotp.server.messages.enums.MessageFunction;
-import com.gotp.server.messages.enums.MessageTarget;
 import com.gotp.server.messages.enums.MessageType;
 import com.gotp.server.messages.game_thread_messages.MessageGameOver;
 import com.gotp.server.messages.game_thread_messages.MessageGameStarted;
 import com.gotp.server.messages.game_thread_messages.MessageMoveFromClient;
 import com.gotp.server.messages.game_thread_messages.MessageMoveFromServer;
 import com.gotp.server.messages.server_thread_messages.MessageGameRequestPVP;
-import com.gotp.server.messages.server_thread_messages.MessageGameRequestPVPSuccess;
 
 /**
  * Client.
@@ -49,16 +45,9 @@ public final class Client extends Application {
     private BlockingQueue<Message> serverQueue;
 
     /**
-     * I made this public so that the BoardCommunicator could access it directly.
-     * * I really should at least make a getter instead
-     * it doesn't matter that much because it's only an output anyway
+     * queue storing responses from the server.
      */
-    public BlockingQueue<Message> receivedQueue;
-
-
-    // * Filip put this here "to calm down pmd" and I'm not sure what for but I have no reason to delete it
-    /** Private constructor. Disallow instantiation. */
-    public Client() { }
+    private BlockingQueue<Message> receivedQueue;
 
     /**
      * Main method.
@@ -90,7 +79,6 @@ public final class Client extends Application {
      */
     private static Parent loadFXML(final String fxml) throws IOException {
         FXMLLoader fxmlLoader = new FXMLLoader(Client.class.getResource(fxml + ".fxml"));
-        //FXMLLoader fxmlLoader = new FXMLLoader(App.class.getResource("testScene.fxml"));
         return fxmlLoader.load();
     }
     
@@ -108,12 +96,12 @@ public final class Client extends Application {
     //------------------------------------------------------
 
     /**
-     * 
+     * takes the next message from server (waits if there's none) and processes it appropriately.
      */
     public void checkInbox() throws InterruptedException, IOException{
             Message response = receivedQueue.take();
-            System.out.println("inbox:");
-            System.out.println(response.getType());
+            //System.out.println("inbox:");
+            //System.out.println(response.getType());
             if (response.getType() == MessageType.GAME_STARTED) {
                 startGame(response);
             }
@@ -143,11 +131,22 @@ public final class Client extends Application {
         }
     }
 
+    /**
+     * if the message from the server was MOVE_FROM_SERVER, makes this move on the board.
+     * @param response
+     * @throws IOException
+     */
     public void processIncomingMove(Message response) throws IOException{
         MessageMoveFromServer moveMessage = (MessageMoveFromServer) response;
         board.makeMove(moveMessage.getMove());
     }
 
+    /**
+     * starts replaying a game after receiving DATABASE_RESPONSE.
+     * @param response
+     * @throws IOException
+     * @throws InterruptedException
+     */
     public void startReplay(Message response) throws IOException, InterruptedException {
         MessageDatabaseResponse dataMessage = (MessageDatabaseResponse) response;
         DatabaseProcessor databaseProcessor = new DatabaseProcessor(dataMessage.getGameHistory());
@@ -163,6 +162,13 @@ public final class Client extends Application {
     }
 
 
+    /**
+     * sends a request for a new game.
+     * @param mode whether the game will be played agains a player or a bot
+     * @param size size of the board
+     * @throws InterruptedException
+     * @throws IOException
+     */
     public void requestGameMode(GameType mode, int size) throws InterruptedException, IOException{
         switch (mode) {
             case PVP:
@@ -177,6 +183,9 @@ public final class Client extends Application {
         
     }
 
+    /**
+     * sends a request for getting the history of the last game.
+     */
     public void requestDatabase() throws IOException, InterruptedException{
         serverQueue.put(new MessageDatabaseRequest());
         checkInbox();

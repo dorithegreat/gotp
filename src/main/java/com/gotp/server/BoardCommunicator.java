@@ -16,7 +16,6 @@ import com.gotp.game_mechanics.board.move.MovePlace;
 import com.gotp.game_mechanics.utilities.Vector;
 import com.gotp.server.Client.GameType;
 import com.gotp.server.messages.game_thread_messages.MessageGameOver;
-import com.gotp.server.messages.game_thread_messages.MessageMoveFromServer;
 
 import javafx.concurrent.Task;
 
@@ -45,8 +44,6 @@ public final class BoardCommunicator {
     /**
      * the object storing board pieces (GUI components) and their logic.
      * bypasses the board controller for easier communication
-     * the controller is still needed though because it contains the 'pass' and 'resign' buttons
-     * * THIS MIGHT END UP BEING REFACTORED
      */
     private DisplayBoard board;
 
@@ -146,7 +143,6 @@ public final class BoardCommunicator {
      */
     public void checkValidity(Vector coords) throws InterruptedException, IOException{
         MoveValidity validity = state.makeMove(new MovePlace(coords, player));
-        // System.out.println(validity);
         if (validity == MoveValidity.LEGAL) {
             client.sendMove(new MovePlace(coords, player));
 
@@ -154,10 +150,6 @@ public final class BoardCommunicator {
             Task<Void> task = new Task<Void>() {
                 @Override
                 public Void call() throws InterruptedException, IOException{
-                    //goes directly to the client's field
-                    // * I should probably change that
-                    // MessageMoveFromServer response = (MessageMoveFromServer) client.receivedQueue.take();
-                    // makeMove(response.getMove());
                     client.checkInbox();
                     return null;
                 }
@@ -182,14 +174,12 @@ public final class BoardCommunicator {
             //the Move interface doesn't provide an easy way to differentiate between the types so instanceof it is
             if (move instanceof MovePlace) {
                 MovePlace movePlace = (MovePlace) move;
-                // board.makeMove(movePlace.getField(), movePlace.getPieceType());
                 drawBoard();
             }
-            else if (move instanceof MoveGiveUp) {
-                //I don't think the serer is sending those
-                //I'm not sure how to process it
+            else {
+                //server should not send those
+                //but if it does there's nothing to do with them
             }
-            //there's not much to process for MovePass
         }
         else {
             System.out.println("Server sent an illegal move");
@@ -223,6 +213,11 @@ public final class BoardCommunicator {
         boardController.swtichToEndScreen(result);
     }
 
+    /**
+     * forwards a request for the history of the last game to the client
+     * @throws IOException
+     * @throws InterruptedException
+     */
     public void sendDatabaseRequest() throws IOException, InterruptedException {
         client.requestDatabase();
     }
