@@ -14,6 +14,7 @@ import com.gotp.server.messages.MessageDebug;
 import com.gotp.server.messages.database_messages.MessageDatabaseResponse;
 import com.gotp.server.messages.enums.MessageTarget;
 import com.gotp.server.messages.enums.MessageType;
+import com.gotp.server.messages.server_thread_messages.MessageGameRequestBot;
 import com.gotp.server.messages.server_thread_messages.MessageGameRequestPVP;
 import com.gotp.server.messages.subscription_messages.MessageSubscribeAccept;
 import com.gotp.server.messages.subscription_messages.MessageSubscribeRequest;
@@ -46,6 +47,7 @@ public class ServerThread implements Runnable {
 
         messageHandlers.put(MessageType.DEBUG, this::handleDebugMessage);
         messageHandlers.put(MessageType.GAME_REQUEST_PVP, this::handleGameRequestPVP);
+        messageHandlers.put(MessageType.GAME_REQUEST_BOT, this::handleGameRequestBot);
         messageHandlers.put(MessageType.DATABASE_REQUEST, this::handleDatabaseRequest);
         messageHandlers.put(MessageType.CLIENT_DISCONNECTED, this::handleClientDisconnect);
     }
@@ -165,6 +167,28 @@ public class ServerThread implements Runnable {
     }
 
     /**
+     * Handle a PVP game request.
+     * @param message
+     * @throws InterruptedException
+     * @return Void
+     */
+    public Void handleGameRequestBot(final Message message) {
+        // Cast
+        MessageGameRequestBot gameRequestMessage = (MessageGameRequestBot) message;
+
+        // Remove the client from the wait list.
+        SharedResources.getInstance().deleteClientFromWaitList(clientSocket);
+
+        // Create a new game thread.
+        GameThread gameThread = GameThread.buildBotGameFromSocket(clientSocket, gameRequestMessage.getBoardSize());
+
+        // run the game thread.
+        Thread thread = new Thread(gameThread);
+        thread.start();
+        return null;
+    }
+
+    /**
      * Handle a database request.
      * @param message
      * @return Void
@@ -188,8 +212,15 @@ public class ServerThread implements Runnable {
      */
     public Void handleClientDisconnect(final Message message) {
         try {
+            // Notify the forwarder to disconnect.
             clientQueue.put(message);
+
+            // Remove the client from the wait list.
+            SharedResources.getInstance().deleteClientFromWaitList(this.clientSocket);
+
+            // Stop the thread.
             this.running = false;
+
         } catch (InterruptedException e) {
             System.out.println("[ServerThread] Interrupted while notyfing Forwarder to disconnect.");
             e.printStackTrace();

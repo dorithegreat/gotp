@@ -12,13 +12,13 @@ import com.gotp.server.messages.other_messages.MessageClientDisconnected;
 
 public class Communicator {
     /** Socket to communicate with server. */
-    private final Socket socket;
+    protected final Socket socket;
 
     /** Input stream to receive messages. */
-    private final ObjectInputStream objectInput;
+    protected final ObjectInputStream objectInput;
 
     /** Output stream to send messages. */
-    private final ObjectOutputStream objectOutput;
+    protected final ObjectOutputStream objectOutput;
 
     /**
      * Constructor.

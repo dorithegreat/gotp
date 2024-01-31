@@ -13,6 +13,9 @@ import com.gotp.game_mechanics.board.GameState;
 import com.gotp.game_mechanics.board.MoveValidity;
 import com.gotp.game_mechanics.board.PieceType;
 import com.gotp.game_mechanics.board.move.Move;
+import com.gotp.server.bot.BotThread;
+import com.gotp.server.bot.FirstLegalMoveBot;
+import com.gotp.server.bot.PassingBot;
 import com.gotp.server.messages.Message;
 import com.gotp.server.messages.MessageDebug;
 import com.gotp.server.messages.enums.MessageTarget;
@@ -55,6 +58,35 @@ public class GameThread implements Runnable {
         }
 
         return new GameThread(gameThreadQueue, player1Queue, player2Queue, boardSize);
+    }
+
+    /**
+     * Build a bot game from a client socket.
+     * @param player
+     * @param boardSize
+     * @return GameThread
+     */
+    public static GameThread buildBotGameFromSocket(final Socket player, final int boardSize) {
+        BlockingQueue<Message> playerQueue = SharedResources.getInstance().getClientQueue(player);
+        BlockingQueue<Message> botQueue = new LinkedBlockingQueue<>();
+
+        BlockingQueue<Message> gameThreadQueue = new LinkedBlockingQueue<>();
+
+        MessageSubscribeRequest subscribeToPlayer = new MessageSubscribeRequest(gameThreadQueue);
+
+        try {
+            playerQueue.put(subscribeToPlayer);
+            gameThreadQueue.take();
+        } catch (InterruptedException e) {
+            System.out.println("GameThread: Interrupted while subscribing to clients!");
+            e.printStackTrace();
+        }
+
+        BotThread botThread = new BotThread(new FirstLegalMoveBot(), botQueue, gameThreadQueue);
+
+        new Thread(botThread).start();
+
+        return new GameThread(gameThreadQueue, playerQueue, botQueue, boardSize);
     }
 
     /** Thread will run while this variable is true. */
@@ -146,6 +178,11 @@ public class GameThread implements Runnable {
         }
     }
 
+    // ------------------- helper functions -------------------
+    private void finishTheGame() {
+        
+    }
+
     // ------------------- Message handlers -------------------
     /**
      * Handle a debug message.
@@ -193,7 +230,7 @@ public class GameThread implements Runnable {
         // Make a move and check if it's legal.
         MoveValidity moveValidity = gameState.makeMove(move);
 
-        if (moveValidity.isLegal()) {
+        if (moveValidity.isLegal() && !gameState.gameOver()) {
             System.out.println(gameState);
             MessageMoveFromServer moveMessage = new MessageMoveFromServer(move);
             try {
@@ -207,11 +244,12 @@ public class GameThread implements Runnable {
                 e.printStackTrace();
             }
 
-        } else {
-            System.out.println("GameThread: Player tried to make an invalid move: " + moveValidity.getMessage());
+        } else if (!moveValidity.isLegal()) {
+            System.out.println("[GameThread] Player tried to make an invalid move: " + moveValidity.getMessage());
         }
 
-        if (gameState.doublePass()) {
+        // Check if the game is over.
+        if (gameState.gameOver()) {
             // Get the final score.
             Map<PieceType, Double> overallScore = this.gameState.overallScore();
 
