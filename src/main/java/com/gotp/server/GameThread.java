@@ -15,6 +15,7 @@ import com.gotp.game_mechanics.board.PieceType;
 import com.gotp.game_mechanics.board.move.Move;
 import com.gotp.server.bot.BotThread;
 import com.gotp.server.bot.CopilotBot;
+import com.gotp.server.bot.FirstLegalMoveBot;
 import com.gotp.server.messages.Message;
 import com.gotp.server.messages.MessageDebug;
 import com.gotp.server.messages.enums.MessageTarget;
@@ -82,7 +83,7 @@ public class GameThread implements Runnable {
             e.printStackTrace();
         }
 
-        BotThread botThread = new BotThread(new CopilotBot(), botQueue, gameThreadQueue);
+        BotThread botThread = new BotThread(new FirstLegalMoveBot(), botQueue, gameThreadQueue);
 
         new Thread(botThread).start();
 

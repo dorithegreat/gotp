@@ -227,6 +227,7 @@ public final class BoardCommunicator {
      */
     public void sendDatabaseRequest() throws IOException, InterruptedException {
         client.requestDatabase();
+        System.out.println("sent to client");
     }
 
 

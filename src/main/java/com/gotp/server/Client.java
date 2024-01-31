@@ -20,6 +20,7 @@ import com.gotp.server.messages.game_thread_messages.MessageGameOver;
 import com.gotp.server.messages.game_thread_messages.MessageGameStarted;
 import com.gotp.server.messages.game_thread_messages.MessageMoveFromClient;
 import com.gotp.server.messages.game_thread_messages.MessageMoveFromServer;
+import com.gotp.server.messages.server_thread_messages.MessageGameRequestBot;
 import com.gotp.server.messages.server_thread_messages.MessageGameRequestPVP;
 
 /**
@@ -183,6 +184,8 @@ public final class Client extends Application {
                 checkInbox();
                 break;
             case BOT:
+                serverQueue.put(new MessageGameRequestBot(size));
+                checkInbox();
                 
             default:
                 break;
@@ -196,6 +199,7 @@ public final class Client extends Application {
     public void requestDatabase() throws IOException, InterruptedException{
         serverQueue.put(new MessageDatabaseRequest());
         checkInbox();
+        System.out.println("made a request");
         //get a response and call method in BoardCommunicator
         //DatabaseProcessor databaseProcessor = new DatabaseProcessor(response.gethistory);
         //databaseProcessor.startReplay

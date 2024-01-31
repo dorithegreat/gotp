@@ -51,8 +51,10 @@ public class EndScreenController {
 
     @FXML
     void startReplay(ActionEvent event) throws IOException, InterruptedException{
+        System.out.println("clicked");
         BoardCommunicator.getInstance().sendDatabaseRequest();
         BoardCommunicator.getInstance().setPlayer(PieceType.EMPTY);
+        System.out.println("request sent");
     }
 
     public void changeToBoard(int n) throws IOException{
@@ -68,6 +70,7 @@ public class EndScreenController {
         boardController.setSize(n);
         boardController.createBoard();
         
+        System.out.println("changing scene");
         //code that changes the scene
         stage = (Stage) message.getScene().getWindow();
         stage.getScene().setRoot(root);
