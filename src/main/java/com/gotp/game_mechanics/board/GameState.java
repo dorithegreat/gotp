@@ -69,6 +69,29 @@ public class GameState {
     }
 
     /**
+     * GameState constructor.
+     * Mainly used for testing and copy method.
+     * @param board
+     * @param previousBoard
+     * @param turn
+     * @param score
+     * @param history
+     */
+    public GameState(
+            final Board board,
+            final Board previousBoard,
+            final PieceType turn,
+            final Map<PieceType, Double> score,
+            final GameHistory history
+    ) {
+        this.board = board;
+        this.previousBoard = previousBoard;
+        this.turn = turn;
+        this.score = score;
+        this.history = history;
+    }
+
+    /**
      * Initializes some game variables.
      */
     private void initializeGame() {
@@ -137,12 +160,10 @@ public class GameState {
         } else if (move instanceof MoveGiveUp) {
             MoveGiveUp moveGiveUp = (MoveGiveUp) move;
 
-            PieceType pieceType = moveGiveUp.getPieceType();
+            // PieceType pieceType = moveGiveUp.getPieceType();
 
             // Update previous board.
             this.previousBoard = this.board.copy();
-
-            this.history.setWinner(pieceType.opposite());
 
         } else {
             // should never happen.
@@ -250,6 +271,27 @@ public class GameState {
     }
 
     /**
+     * True if a player gaveUp.
+     * @return boolean
+     */
+    public boolean playerGaveUp() {
+        if (getHistory().size() == 0) {
+            return false;
+        }
+
+        // Is last move a MoveGiveUp?
+        return getHistory().get(getHistory().size() - 1) instanceof MoveGiveUp;
+    }
+
+    /**
+     * True if doublePass() or playerGaveUp().
+     * @return boolean
+     */
+    public boolean gameOver() {
+        return doublePass() || playerGaveUp();
+    }
+
+    /**
      * Returns an overall score.
      * @return Overall score for everything.
      */
@@ -284,6 +326,13 @@ public class GameState {
         overallScore.put(PieceType.WHITE, whiteScore);
         overallScore.put(PieceType.BLACK, blackScore);
 
+        // If player gave up, give him -1 point.
+        if (playerGaveUp()) {
+            Move lastMove = this.history.get(this.history.size() - 1);
+            PieceType pieceType = lastMove.getPieceType();
+            overallScore.put(pieceType, -1.0);
+        }
+
         return overallScore;
     }
 
@@ -302,6 +351,25 @@ public class GameState {
      */
     public Board getBoardCopy() {
         return this.board.copy();
+    }
+
+    /**
+     * Copy of the game state.
+     * Without history.
+     * @return GameState
+     */
+    public GameState copy() {
+        HashMap<PieceType, Double> scoreCopy = new HashMap<>();
+        scoreCopy.put(PieceType.WHITE, this.score.get(PieceType.WHITE));
+        scoreCopy.put(PieceType.BLACK, this.score.get(PieceType.BLACK));
+
+        return new GameState(
+                this.board.copy(),
+                this.previousBoard.copy(),
+                this.turn,
+                scoreCopy,
+                (GameHistory) this.history.clone()
+        );
     }
 
     /**
