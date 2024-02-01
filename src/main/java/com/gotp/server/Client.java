@@ -183,7 +183,8 @@ public final class Client extends Application {
                 checkInbox();
                 break;
             case BOT:
-                
+                serverQueue.put(new MessageGameRequestBot(size));
+                checkInbox();
             default:
                 break;
         }
