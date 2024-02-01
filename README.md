@@ -10,3 +10,6 @@
 
 # Other
 All UML diagrams are in the UML directory.
+
+# Credit
+Project by Filip Kończyk, Natalia Wolniewicz
