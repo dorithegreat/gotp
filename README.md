@@ -7,6 +7,8 @@
 - GameState - Facade
 - SharedResources - Singleton
 - Forwarder - Observer
+- BoardController - Singleton
+- DisplayBoard, BoardController, Client - Chain of responsibility
 
 # Other
 All UML diagrams are in the UML directory.
